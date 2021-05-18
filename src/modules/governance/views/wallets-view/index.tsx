@@ -42,24 +42,28 @@ const WalletView: React.FC = () => {
   }
 
   return (
-    <Grid flow="row" gap={32}>
-      <Text type="h1" weight="bold" color="primary">
-        Wallet
-      </Text>
-      <Tabs activeKey={activeTab} simple onChange={handleTabChange}>
-        <Tabs.Tab key="deposit" tab="Deposit" />
-        <Tabs.Tab key="lock" tab="Lock" />
-        <Tabs.Tab key="delegate" tab="Delegate" />
-        <Tabs.Tab key="withdraw" tab="Withdraw" />
-      </Tabs>
-      <Switch>
-        <Route path="/governance/wallet/deposit" exact component={WalletDepositView} />
-        <Route path="/governance/wallet/lock" exact component={WalletLockView} />
-        <Route path="/governance/wallet/delegate" exact component={WalletDelegateView} />
-        <Route path="/governance/wallet/withdraw" exact component={WalletWithdrawView} />
-        <Redirect from="/governance/wallet" to="/governance/wallet/deposit" />
-      </Switch>
-    </Grid>
+    <div className="content-container-fix">
+      <div className="container-limit" style={{ maxWidth: '640px' }}>
+        <div className="flex flow-row row-gap-32">
+          <Text type="h1" weight="bold" color="primary">
+            Wallet
+          </Text>
+          <Tabs activeKey={activeTab} simple onChange={handleTabChange}>
+            <Tabs.Tab key="deposit" tab="Deposit" />
+            <Tabs.Tab key="lock" tab="Lock" />
+            <Tabs.Tab key="delegate" tab="Delegate" />
+            <Tabs.Tab key="withdraw" tab="Withdraw" />
+          </Tabs>
+          <Switch>
+            <Route path="/governance/wallet/deposit" exact component={WalletDepositView} />
+            <Route path="/governance/wallet/lock" exact component={WalletLockView} />
+            <Route path="/governance/wallet/delegate" exact component={WalletDelegateView} />
+            <Route path="/governance/wallet/withdraw" exact component={WalletWithdrawView} />
+            <Redirect from="/governance/wallet" to="/governance/wallet/deposit" />
+          </Switch>
+        </div>
+      </div>
+    </div>
   );
 };
 

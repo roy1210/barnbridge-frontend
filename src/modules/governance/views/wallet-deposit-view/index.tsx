@@ -1,151 +1,136 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import AntdForm from 'antd/lib/form';
-import AntdSwitch from 'antd/lib/switch';
 import BigNumber from 'bignumber.js';
+import { useTxConfirm } from 'web3/components/tx-confirm-provider';
 import Erc20Contract from 'web3/erc20Contract';
-import { ZERO_BIG_NUMBER, formatBONDValue } from 'web3/utils';
+import { formatToken } from 'web3/utils';
 
 import Alert from 'components/antd/alert';
-import Button from 'components/antd/button';
-import Form from 'components/antd/form';
-import GasFeeList from 'components/custom/gas-fee-list';
-import Grid from 'components/custom/grid';
+import Spin from 'components/antd/spin';
+import Tooltip from 'components/antd/tooltip';
 import Icon from 'components/custom/icon';
-import TokenAmount from 'components/custom/token-amount';
+import { TokenAmount } from 'components/custom/token-amount-new';
 import { Text } from 'components/custom/typography';
-import { BondToken } from 'components/providers/known-tokens-provider';
+import { ProjectToken } from 'components/providers/known-tokens-provider';
 import config from 'config';
-import useMergeState from 'hooks/useMergeState';
-import { useDAO } from 'modules/governance/components/dao-provider';
 
+import { useDAO } from '../../components/dao-provider';
 import WalletDepositConfirmModal from './components/wallet-deposit-confirm-modal';
 
-type DepositFormData = {
-  amount?: BigNumber;
-  gasPrice?: {
-    value: number;
-  };
-};
-
-const InitialFormValues: DepositFormData = {
-  amount: undefined,
-  gasPrice: undefined,
-};
-
-type WalletDepositViewState = {
-  showDepositConfirmModal: boolean;
-  enabling: boolean;
-  enabled?: boolean;
-  saving: boolean;
-  // expanded: boolean;
-};
-
-const InitialState: WalletDepositViewState = {
-  showDepositConfirmModal: false,
-  enabling: false,
-  enabled: undefined,
-  saving: false,
-  // expanded: false,
-};
-
 const WalletDepositView: React.FC = () => {
+  const txConfirmCtx = useTxConfirm();
   const daoCtx = useDAO();
-  const [form] = AntdForm.useForm<DepositFormData>();
 
-  const [state, setState] = useMergeState<WalletDepositViewState>(InitialState);
+  const [amount, setAmount] = useState('');
+  const [isApproving, setApproving] = useState(false);
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [depositConfirmVisible, showDepositConfirm] = useState(false);
 
-  const { balance: stakedBalance, userLockedUntil } = daoCtx.daoBarn;
-  const bondBalance = (BondToken.contract as Erc20Contract).balance?.unscaleBy(BondToken.decimals);
-  const barnAllowance = (BondToken.contract as Erc20Contract).getAllowanceOf(config.contracts.dao.barn);
-  const isLocked = (userLockedUntil ?? 0) > Date.now();
+  const tokenContract = ProjectToken.contract as Erc20Contract;
+  const walletBalance = tokenContract.balance?.unscaleBy(ProjectToken.decimals);
+  const barnAllowance = tokenContract.getAllowanceOf(config.contracts.dao.barn)?.unscaleBy(ProjectToken.decimals);
+  const maxAmount = BigNumber.min(walletBalance ?? 0, barnAllowance ?? 0);
+  const isNotEnabled = barnAllowance?.eq(BigNumber.ZERO);
 
-  async function handleSwitchChange(checked: boolean) {
-    setState({ enabling: true });
+  const barnContract = daoCtx.newDaoBarn;
+  const stakedBalance = barnContract.balance?.unscaleBy(ProjectToken.decimals);
+
+  async function handleEnableToken() {
+    setApproving(true);
 
     try {
-      await (BondToken.contract as Erc20Contract).approve(checked, config.contracts.dao.barn);
+      await tokenContract.approve(true, config.contracts.dao.barn);
     } catch {}
 
-    setState({ enabling: false });
+    setApproving(false);
   }
 
-  async function handleSubmit(values: DepositFormData) {
-    const { amount, gasPrice } = values;
-
-    if (!amount || !gasPrice) {
+  async function handleDeposit() {
+    if (!amount) {
       return;
     }
 
-    setState({ saving: true });
+    const bnAmount = new BigNumber(amount);
+    const scaledAmount = bnAmount.scaleBy(ProjectToken.decimals);
 
-    try {
-      await daoCtx.daoBarn.actions.deposit(amount, gasPrice.value);
-      form.setFieldsValue(InitialFormValues);
-      daoCtx.daoBarn.reload();
-      (BondToken.contract as Erc20Contract).loadBalance().catch(Error);
-    } catch {}
-
-    setState({ saving: false });
-  }
-
-  function handleFinish(values: DepositFormData) {
-    if (isLocked) {
-      setState({ showDepositConfirmModal: true });
+    if (!scaledAmount) {
       return;
     }
 
-    handleSubmit(values);
+    if (barnContract.isUserLocked) {
+      showDepositConfirm(true);
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const result = await txConfirmCtx.confirm({
+        header: (
+          <div className="grid flow-row align-center">
+            <Text type="small" weight="semibold" color="secondary" className="mb-4">
+              Deposited amount
+            </Text>
+            <Text type="p1" weight="semibold" color="primary">
+              {formatToken(bnAmount)} {ProjectToken.symbol}
+            </Text>
+          </div>
+        ),
+        submitText: 'Confirm your deposit',
+      });
+
+      await barnContract.deposit(scaledAmount, result.gasPrice);
+      await barnContract.loadUserData().catch(Error);
+      await tokenContract.loadBalance().catch(Error);
+      setAmount('');
+    } catch {}
+
+    setSubmitting(false);
   }
-
-  React.useEffect(() => {
-    const isEnabled = barnAllowance?.gt(ZERO_BIG_NUMBER) ?? false;
-
-    setState({
-      enabled: isEnabled,
-      // expanded: isEnabled,
-    });
-  }, [barnAllowance]);
 
   return (
     <div className="card">
       <div className="card-header flex wrap col-gap-64">
-        <Grid flow="col" gap={12}>
-          <Icon name="static/token-bond" width={40} height={40} />
+        <div className="flex align-center">
+          <Icon name={ProjectToken.icon!} width={40} height={40} className="mr-12" />
           <Text type="p1" weight="semibold" color="primary">
-            BOND
+            {ProjectToken.symbol}
           </Text>
-        </Grid>
-
-        <Grid flow="row" gap={4}>
-          <Text type="small" weight="semibold" color="secondary">
-            Staked Balance
-          </Text>
-          <Text type="p1" weight="semibold" color="primary">
-            {formatBONDValue(stakedBalance)}
-          </Text>
-        </Grid>
-
-        <Grid flow="row" gap={4}>
-          <Text type="small" weight="semibold" color="secondary">
-            Wallet Balance
-          </Text>
-          <Text type="p1" weight="semibold" color="primary">
-            {formatBONDValue(bondBalance)}
-          </Text>
-        </Grid>
-
-        <Grid flow="row" gap={4}>
-          <Text type="small" weight="semibold" color="secondary">
-            Enable Token
-          </Text>
-          <AntdSwitch
-            style={{ justifySelf: 'flex-start' }}
-            checked={state.enabled}
-            loading={state.enabled === undefined || state.enabling}
-            onChange={handleSwitchChange}
-          />
-        </Grid>
+        </div>
+        <div className="flex flow-row">
+          <Tooltip
+            title={
+              <Text type="small" color="primary">
+                {formatToken(stakedBalance, {
+                  decimals: ProjectToken.decimals,
+                })}
+              </Text>
+            }>
+            <Text type="small" weight="semibold" color="secondary" className="mb-4">
+              Staked Balance
+            </Text>
+            <Text type="p1" weight="semibold" color="primary">
+              {formatToken(stakedBalance)}
+            </Text>
+          </Tooltip>
+        </div>
+        <div className="flex flow-row">
+          <Tooltip
+            title={
+              <Text type="small" color="primary">
+                {formatToken(walletBalance, {
+                  decimals: ProjectToken.decimals,
+                })}
+              </Text>
+            }>
+            <Text type="small" weight="semibold" color="secondary" className="mb-4">
+              Wallet Balance
+            </Text>
+            <Text type="p1" weight="semibold" color="primary">
+              {formatToken(walletBalance)}
+            </Text>
+          </Tooltip>
+        </div>
         {config.isTestnet && (
           <Link to="/faucets" className="button-ghost ml-auto">
             Faucets
@@ -153,51 +138,48 @@ const WalletDepositView: React.FC = () => {
         )}
       </div>
 
-      <Form
-        className="p-24"
-        form={form}
-        initialValues={InitialFormValues}
-        validateTrigger={['onSubmit']}
-        onFinish={handleFinish}>
-        <Grid flow="row" gap={32}>
-          <Grid flow="col" gap={64} colsTemplate="1fr 1fr">
-            <Grid flow="row" gap={32}>
-              <Form.Item name="amount" label="Amount" rules={[{ required: true, message: 'Required' }]}>
-                <TokenAmount
-                  tokenIcon="static/token-bond"
-                  max={bondBalance}
-                  maximumFractionDigits={BondToken.decimals}
-                  displayDecimals={4}
-                  disabled={state.saving}
-                  slider
-                />
-              </Form.Item>
-              <Alert message="Deposits made after you have an ongoing lock will be added to the locked balance and will be subjected to the same lock timer." />
-            </Grid>
-            <Grid flow="row">
-              <Form.Item
-                name="gasPrice"
-                label="Gas Fee (Gwei)"
-                hint="This value represents the gas price you're willing to pay for each unit of gas. Gwei is the unit of ETH typically used to denominate gas prices and generally, the more gas fees you pay, the faster the transaction will be mined."
-                rules={[{ required: true, message: 'Required' }]}>
-                <GasFeeList disabled={state.saving} />
-              </Form.Item>
-            </Grid>
-          </Grid>
-          <Button type="primary" htmlType="submit" loading={state.saving} style={{ justifySelf: 'start' }}>
+      <div className="flex flow-row row-gap-32 p-24">
+        <div className="flex flow-row">
+          <Text type="small" weight="semibold" color="secondary" className="mb-4">
+            Amount
+          </Text>
+          <TokenAmount
+            before={<Icon name={ProjectToken.icon!} width={24} height={24} />}
+            value={amount}
+            onChange={setAmount}
+            max={maxAmount.toNumber()}
+            placeholder={`0 (Max ${maxAmount.toNumber()})`}
+            disabled={isSubmitting}
+            slider
+          />
+        </div>
+        <Alert message="Deposits made after you have an ongoing lock will be added to the locked balance and will be subjected to the same lock timer." />
+        <div className="flex justify-end">
+          {isNotEnabled && (
+            <button type="button" className="button-ghost mr-24" disabled={isApproving} onClick={handleEnableToken}>
+              <Spin spinning={isApproving} />
+              Enable
+            </button>
+          )}
+          <button
+            type="submit"
+            className="button-primary"
+            disabled={isNotEnabled || isSubmitting}
+            onClick={handleDeposit}>
+            <Spin spinning={isSubmitting} />
             Deposit
-          </Button>
-        </Grid>
-      </Form>
+          </button>
+        </div>
+      </div>
 
-      {state.showDepositConfirmModal && (
+      {depositConfirmVisible && (
         <WalletDepositConfirmModal
-          deposit={form.getFieldsValue().amount}
-          lockDuration={userLockedUntil}
-          onCancel={() => setState({ showDepositConfirmModal: false })}
+          deposit={new BigNumber(amount)}
+          lockDuration={barnContract.userLockedUntil}
+          onCancel={() => showDepositConfirm(false)}
           onOk={() => {
-            setState({ showDepositConfirmModal: false });
-            return handleSubmit(form.getFieldsValue());
+            showDepositConfirm(false);
+            handleDeposit().catch(Error);
           }}
         />
       )}

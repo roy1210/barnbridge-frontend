@@ -189,6 +189,8 @@ const KNOWN_TOKENS: TokenMeta[] = [
 
 (window as any).KNOWN_TOKENS = KNOWN_TOKENS;
 
+export const ProjectToken: TokenMeta = BondToken;
+
 type ContextType = {
   tokens: TokenMeta[];
   getTokenBySymbol(symbol: string): TokenMeta | undefined;

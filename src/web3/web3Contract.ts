@@ -11,13 +11,33 @@ import { DEFAULT_WEB3, DEFAULT_WEB3_PROVIDER, WEB3_ERROR_VALUE } from 'component
 
 export type Web3ContractAbiItem = AbiItem;
 
-export function createAbiItem(name: string, inputs: string[] = [], outputs: string[] = []): AbiItem {
+type AbiItemType = string | string[];
+
+export function createAbiItem(name: string, inputs: AbiItemType[] = [], outputs: AbiItemType[] = []): AbiItem {
+  const mapType = (type: AbiItemType) => {
+    if (Array.isArray(type)) {
+      return {
+        name: '',
+        type: 'tuple',
+        components: type.map(cType => ({
+          name: '',
+          type: cType,
+        })),
+      };
+    }
+
+    return {
+      name: '',
+      type,
+    };
+  };
+
   return {
     name,
     type: 'function',
     stateMutability: 'view',
-    inputs: inputs.map(type => ({ name: '', type })),
-    outputs: outputs.map(type => ({ name: '', type })),
+    inputs: inputs.map(mapType),
+    outputs: outputs.map(mapType),
   };
 }
 

@@ -1,143 +1,139 @@
-import React from 'react';
-import * as Antd from 'antd';
+import React, { useState } from 'react';
+import AntdSpin from 'antd/lib/spin';
 import BigNumber from 'bignumber.js';
+import { useTxConfirm } from 'web3/components/tx-confirm-provider';
 import Erc20Contract from 'web3/erc20Contract';
-import { ZERO_BIG_NUMBER, formatBONDValue } from 'web3/utils';
+import { formatToken } from 'web3/utils';
 
 import Alert from 'components/antd/alert';
-import Button from 'components/antd/button';
-import Form from 'components/antd/form';
-import GasFeeList from 'components/custom/gas-fee-list';
-import Grid from 'components/custom/grid';
+import Tooltip from 'components/antd/tooltip';
 import Icon from 'components/custom/icon';
-import TokenAmount from 'components/custom/token-amount';
+import { TokenAmount } from 'components/custom/token-amount-new';
 import { Text } from 'components/custom/typography';
-import { BondToken } from 'components/providers/known-tokens-provider';
-import useMergeState from 'hooks/useMergeState';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { ProjectToken } from 'components/providers/known-tokens-provider';
 
-type WithdrawFormData = {
-  amount?: BigNumber;
-  gasPrice?: {
-    value: number;
-  };
-};
-
-const InitialFormValues: WithdrawFormData = {
-  amount: undefined,
-  gasPrice: undefined,
-};
-
-type WalletWithdrawViewState = {
-  saving: boolean;
-};
-
-const InitialState: WalletWithdrawViewState = {
-  saving: false,
-};
+import { useDAO } from '../../components/dao-provider';
 
 const WalletWithdrawView: React.FC = () => {
+  const txConfirmCtx = useTxConfirm();
   const daoCtx = useDAO();
-  const [form] = Antd.Form.useForm<WithdrawFormData>();
 
-  const [state, setState] = useMergeState<WalletWithdrawViewState>(InitialState);
+  const [amount, setAmount] = useState('');
+  const [isSubmitting, setSubmitting] = useState(false);
 
-  const { balance: stakedBalance, userLockedUntil } = daoCtx.daoBarn;
-  const bondBalance = (BondToken.contract as Erc20Contract).balance?.unscaleBy(BondToken.decimals);
-  const isLocked = (userLockedUntil ?? 0) > Date.now();
-  const hasStakedBalance = stakedBalance?.gt(ZERO_BIG_NUMBER);
-  const formDisabled = !hasStakedBalance || isLocked;
+  const tokenContract = ProjectToken.contract as Erc20Contract;
+  const walletBalance = tokenContract.balance?.unscaleBy(ProjectToken.decimals);
 
-  async function handleSubmit(values: WithdrawFormData) {
-    const { amount, gasPrice } = values;
+  const barnContract = daoCtx.newDaoBarn;
+  const stakedBalance = barnContract.balance?.unscaleBy(ProjectToken.decimals);
+  const maxAmount = stakedBalance ?? BigNumber.ZERO;
 
-    if (!amount || !gasPrice) {
+  async function handleWithdraw() {
+    if (!amount) {
       return;
     }
 
-    setState({ saving: true });
+    const bnAmount = new BigNumber(amount);
+    const scaledAmount = bnAmount.scaleBy(ProjectToken.decimals);
+
+    if (!scaledAmount) {
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
-      await daoCtx.daoBarn.actions.withdraw(amount, gasPrice.value);
-      form.setFieldsValue(InitialFormValues);
-      daoCtx.daoBarn.reload();
-      (BondToken.contract as Erc20Contract).loadBalance().catch(Error);
+      const result = await txConfirmCtx.confirm({
+        header: (
+          <div className="grid flow-row align-center">
+            <Text type="small" weight="semibold" color="secondary" className="mb-4">
+              Withdraw amount
+            </Text>
+            <Text type="p1" weight="semibold" color="primary">
+              {formatToken(bnAmount)} {ProjectToken.symbol}
+            </Text>
+          </div>
+        ),
+        submitText: 'Confirm your withdraw',
+      });
+
+      await barnContract.withdraw(scaledAmount, result.gasPrice);
+      await barnContract.loadUserData().catch(Error);
+      await tokenContract.loadBalance().catch(Error);
+      setAmount('');
     } catch {}
 
-    setState({ saving: false });
+    setSubmitting(false);
   }
 
   return (
     <div className="card">
-      <Grid className="card-header" flow="col" gap={24} colsTemplate="1fr 1fr 1fr 1fr 42px" align="start">
-        <Grid flow="col" gap={12}>
-          <Icon name="static/token-bond" width={40} height={40} />
+      <div className="card-header flex wrap col-gap-64">
+        <div className="flex align-center">
+          <Icon name={ProjectToken.icon!} width={40} height={40} className="mr-12" />
           <Text type="p1" weight="semibold" color="primary">
-            BOND
+            {ProjectToken.symbol}
           </Text>
-        </Grid>
+        </div>
+        <div className="flex flow-row">
+          <Tooltip
+            title={
+              <Text type="small" color="primary">
+                {formatToken(stakedBalance, {
+                  decimals: ProjectToken.decimals,
+                })}
+              </Text>
+            }>
+            <Text type="small" weight="semibold" color="secondary" className="mb-4">
+              Staked Balance
+            </Text>
+            <Text type="p1" weight="semibold" color="primary">
+              {formatToken(stakedBalance)}
+            </Text>
+          </Tooltip>
+        </div>
+        <div className="flex flow-row">
+          <Tooltip
+            title={
+              <Text type="small" color="primary">
+                {formatToken(walletBalance, {
+                  decimals: ProjectToken.decimals,
+                })}
+              </Text>
+            }>
+            <Text type="small" weight="semibold" color="secondary" className="mb-4">
+              Wallet Balance
+            </Text>
+            <Text type="p1" weight="semibold" color="primary">
+              {formatToken(walletBalance)}
+            </Text>
+          </Tooltip>
+        </div>
+      </div>
 
-        <Grid flow="row" gap={4}>
-          <Text type="small" weight="semibold" color="secondary">
-            Staked Balance
+      <div className="flex flow-row row-gap-32 p-24">
+        <div className="flex flow-row">
+          <Text type="small" weight="semibold" color="secondary" className="mb-4">
+            Amount
           </Text>
-          <Text type="p1" weight="semibold" color="primary">
-            {formatBONDValue(stakedBalance)}
-          </Text>
-        </Grid>
-
-        <Grid flow="row" gap={4}>
-          <Text type="small" weight="semibold" color="secondary">
-            Wallet Balance
-          </Text>
-          <Text type="p1" weight="semibold" color="primary">
-            {formatBONDValue(bondBalance)}
-          </Text>
-        </Grid>
-
-        <div />
-      </Grid>
-      <Form
-        className="p-24"
-        form={form}
-        initialValues={InitialFormValues}
-        validateTrigger={['onSubmit']}
-        onFinish={handleSubmit}>
-        <Grid flow="row" gap={32}>
-          <Grid flow="col" gap={64} colsTemplate="1fr 1fr">
-            <Grid flow="row" gap={32}>
-              <Form.Item name="amount" label="Amount" rules={[{ required: true, message: 'Required' }]}>
-                <TokenAmount
-                  tokenIcon="static/token-bond"
-                  max={stakedBalance}
-                  maximumFractionDigits={BondToken.decimals}
-                  displayDecimals={4}
-                  disabled={formDisabled || state.saving}
-                  slider
-                />
-              </Form.Item>
-              <Alert message="Locked balances are not available for withdrawal until the timer ends. Withdrawal means you will stop earning staking rewards for the amount withdrawn." />
-            </Grid>
-            <Grid flow="row">
-              <Form.Item
-                name="gasPrice"
-                label="Gas Fee (Gwei)"
-                hint="This value represents the gas price you're willing to pay for each unit of gas. Gwei is the unit of ETH typically used to denominate gas prices and generally, the more gas fees you pay, the faster the transaction will be mined."
-                rules={[{ required: true, message: 'Required' }]}>
-                <GasFeeList disabled={state.saving} />
-              </Form.Item>
-            </Grid>
-          </Grid>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={state.saving}
-            disabled={formDisabled}
-            style={{ justifySelf: 'start' }}>
+          <TokenAmount
+            before={<Icon name={ProjectToken.icon!} width={24} height={24} />}
+            value={amount}
+            onChange={setAmount}
+            max={maxAmount.toNumber()}
+            placeholder={`0 (Max ${maxAmount.toNumber()})`}
+            disabled={isSubmitting}
+            slider
+          />
+        </div>
+        <Alert message="Locked balances are not available for withdrawal until the timer ends. Withdrawal means you will stop earning staking rewards for the amount withdrawn." />
+        <div className="flex justify-end">
+          <button type="submit" className="button-primary" disabled={isSubmitting} onClick={handleWithdraw}>
+            <AntdSpin spinning={isSubmitting} />
             Withdraw
-          </Button>
-        </Grid>
-      </Form>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

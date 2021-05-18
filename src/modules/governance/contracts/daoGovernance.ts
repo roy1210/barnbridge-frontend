@@ -1,7 +1,8 @@
 import React from 'react';
+import { AbiItem } from 'web3-utils';
 import { Web3EventType } from 'web3/types';
 import { getGasValue } from 'web3/utils';
-import Web3Contract, { Web3ContractAbiItem } from 'web3/web3Contract';
+import Web3Contract, { Web3ContractAbiItem, createAbiItem } from 'web3/web3Contract';
 
 import config from 'config';
 import useMergeState from 'hooks/useMergeState';
@@ -225,59 +226,188 @@ export function useDAOGovernanceContract(): DAOGovernanceContract {
     actions: {
       activate(): Promise<void> {
         return wallet.isActive ? activateSend(wallet.account!) : Promise.reject();
-      },
+      }, //#
       createProposal(payload: CreateProposalPayload): Promise<Web3EventType<CreateProposalResult>> {
         return wallet.isActive ? createProposalSend(payload, wallet.account!) : Promise.reject();
-      },
+      }, //#
       cancelProposal(proposalId: number): Promise<void> {
         return wallet.isActive ? cancelProposalSend(proposalId, wallet.account!) : Promise.reject();
-      },
+      }, //#
       queueProposalForExecution(proposalId: number, gasPrice: number): Promise<void> {
         return wallet.isActive
           ? queueProposalForExecutionSend(proposalId, wallet.account!, gasPrice)
           : Promise.reject();
-      },
+      }, //#
       executeProposal(proposalId: number): Promise<void> {
         return wallet.isActive ? executeProposalSend(proposalId, wallet.account!) : Promise.reject();
-      },
+      }, //#
       getProposalState(proposalId: number): Promise<ProposalState> {
         return getProposalStateCall(proposalId);
-      },
+      }, // #
       getLatestProposalId(): Promise<number> {
         return wallet.isActive ? getLatestProposalIdCall(wallet.account!) : Promise.reject();
-      },
+      }, // #
       getProposalReceipt(proposalId: number): Promise<ProposalReceipt> {
         return wallet.isActive ? getProposalReceiptCall(proposalId, wallet.account!) : Promise.reject();
-      },
+      }, //#
       proposalCastVote(proposalId: number, support: boolean, gasPrice: number): Promise<void> {
         return wallet.isActive
           ? proposalCastVoteSend(proposalId, support, wallet.account!, gasPrice)
           : Promise.reject();
-      },
+      }, //#
       proposalCancelVote(proposalId: number, gasPrice: number): Promise<void> {
         return wallet.isActive ? proposalCancelVoteSend(proposalId, wallet.account!, gasPrice) : Promise.reject();
-      },
+      }, //#
       abrogationProposal(proposalId: number): Promise<AbrogationProposal> {
         return abrogationProposalCall(proposalId);
-      },
+      }, //#
       getAbrogationProposalReceipt(proposalId: number): Promise<AbrogationProposalReceipt> {
         return wallet.isActive ? getAbrogationProposalReceiptCall(proposalId, wallet.account!) : Promise.reject();
-      },
+      }, //#
       startAbrogationProposal(proposalId: number, description: string, gasPrice: number): Promise<void> {
         return wallet.isActive
           ? startAbrogationProposalSend(proposalId, description, wallet.account!, gasPrice)
           : Promise.reject();
-      },
+      }, //#
       abrogationProposalCastVote(proposalId: number, support: boolean, gasPrice: number): Promise<void> {
         return wallet.isActive
           ? abrogationProposalCastVoteSend(proposalId, support, wallet.account!, gasPrice)
           : Promise.reject();
-      },
+      }, //#
       abrogationProposalCancelVote(proposalId: number, gasPrice: number): Promise<void> {
         return wallet.isActive
           ? abrogationProposalCancelVoteSend(proposalId, wallet.account!, gasPrice)
           : Promise.reject();
-      },
+      }, //#
     },
   };
 }
+
+const DaoGovernanceABI: AbiItem[] = [
+  // call
+  createAbiItem('isActive', [], ['bool']),
+  createAbiItem('state', ['uint256'], ['uint8']),
+  createAbiItem('latestProposalIds', ['address'], ['uint256']),
+  createAbiItem('getReceipt', ['uint256', 'address'], [['bool', 'uint256', 'bool']]),
+  createAbiItem('abrogationProposals', ['uint256'], [['address', 'uint256', 'string', 'uint256', 'uint256']]),
+  createAbiItem('getAbrogationProposalReceipt', ['uint256', 'address'], [['bool', 'uint256', 'bool']]),
+  // send
+  createAbiItem('activate', [], []),
+  createAbiItem('propose', ['address[]', 'uint256[]', 'string[]', 'bytes[]', 'string', 'string'], ['uint256']),
+  createAbiItem('cancelProposal', ['uint256'], []),
+  createAbiItem('queue', ['uint256'], []),
+  createAbiItem('execute', ['uint256'], []),
+  createAbiItem('castVote', ['uint256', 'bool'], []),
+  createAbiItem('cancelVote', ['uint256'], []),
+  createAbiItem('startAbrogationProposal', ['uint256', 'string'], []),
+  createAbiItem('abrogationProposal_castVote', ['uint256', 'bool'], []),
+  createAbiItem('abrogationProposal_cancelVote', ['uint256'], []),
+];
+
+class DaoGovernanceContract extends Web3Contract {
+  constructor(address: string) {
+    super(DaoGovernanceABI, address, 'DAO Governance');
+
+    this.on(Web3Contract.UPDATE_ACCOUNT, () => {});
+  }
+
+  // common data
+  isActive?: boolean;
+
+  async loadCommonData(): Promise<void> {
+    const [isActive] = await this.batch([{ method: 'isActive' }]);
+
+    this.isActive = Boolean(isActive);
+    this.emit(Web3Contract.UPDATE_DATA);
+  }
+
+  async loadUserData(): Promise<void> {
+    this.assertAccount();
+
+    this.emit(Web3Contract.UPDATE_DATA);
+  }
+
+  getState(proposalId: number): Promise<number> {
+    return this.call('state', [proposalId], {}).then(value => Number(value));
+  }
+
+  getLatestProposalIds(address: string): Promise<number> {
+    return this.call('latestProposalIds', [address], {}).then(value => Number(value));
+  }
+
+  getReceipt(proposalId: number, voterAddress: string): Promise<ProposalReceipt> {
+    return this.call('getReceipt', [proposalId, voterAddress], {}).then(value => ({
+      hasVoted: Boolean(value[0]),
+      votes: Number(value[1]),
+      support: Boolean(value[2]),
+    }));
+  }
+
+  getAbrogationProposals(proposalId: number): Promise<AbrogationProposal> {
+    return this.call('abrogationProposals', [proposalId], {}).then(value => ({
+      creator: value[0],
+      createTime: Number(value[1]),
+      description: value[2],
+      forVotes: Number(value[3]),
+      againstVotes: Number(value[4]),
+    }));
+  }
+
+  getAbrogationProposalReceipt(proposalId: number, voterAddress: string): Promise<AbrogationProposalReceipt> {
+    return this.call('getAbrogationProposalReceipt', [proposalId, voterAddress], {}).then(value => ({
+      hasVoted: Boolean(value[0]),
+      votes: Number(value[1]),
+      support: Boolean(value[2]),
+    }));
+  }
+
+  activate(gasPrice?: number): Promise<void> {
+    return this.send('activate', [], {}, gasPrice);
+  }
+
+  propose(
+    title: string,
+    description: string,
+    targets: string[],
+    values: string[],
+    signatures: string[],
+    calldatas: string[],
+    gasPrice?: number,
+  ): Promise<number> {
+    return this.send('propose', [targets, values, signatures, calldatas, description, title], {}, gasPrice);
+  }
+
+  cancelProposal(proposalId: number, gasPrice?: number): Promise<void> {
+    return this.send('cancelProposal', [proposalId], {}, gasPrice);
+  }
+
+  queue(proposalId: number, gasPrice?: number): Promise<void> {
+    return this.send('queue', [proposalId], {}, gasPrice);
+  }
+
+  execute(proposalId: number, gasPrice?: number): Promise<void> {
+    return this.send('execute', [proposalId], {}, gasPrice);
+  }
+
+  castVote(proposalId: number, support: boolean, gasPrice?: number): Promise<void> {
+    return this.send('castVote', [proposalId, support], {}, gasPrice);
+  }
+
+  cancelVote(proposalId: number, gasPrice?: number): Promise<void> {
+    return this.send('cancelVote', [proposalId], {}, gasPrice);
+  }
+
+  startAbrogationProposal(proposalId: number, description: string, gasPrice?: number): Promise<void> {
+    return this.send('startAbrogationProposal', [proposalId, description], {}, gasPrice);
+  }
+
+  abrogationProposalCastVote(proposalId: number, support: boolean, gasPrice?: number): Promise<void> {
+    return this.send('abrogationProposal_castVote', [proposalId, support], {}, gasPrice);
+  }
+
+  abrogationProposalCancelVote(proposalId: number, gasPrice?: number): Promise<void> {
+    return this.send('abrogationProposal_cancelVote', [proposalId], {}, gasPrice);
+  }
+}
+
+export default DaoGovernanceContract;

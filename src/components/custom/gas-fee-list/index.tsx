@@ -10,7 +10,7 @@ import useMergeState from 'hooks/useMergeState';
 
 import s from './s.module.scss';
 
-type GasFeeOption = {
+export type GasFeeOption = {
   key: string;
   name: string;
   value: number;
@@ -22,7 +22,7 @@ type GasFeeListState = {
   selected?: GasFeeOption;
 };
 
-export type GasFeeListProps = RadioGroupProps & {
+export type GasFeeListProps = Omit<RadioGroupProps, 'onChange'> & {
   value?: GasFeeOption;
   onChange?: (value: GasFeeOption) => void;
 };
@@ -95,15 +95,13 @@ const GasFeeList: React.FC<GasFeeListProps> = props => {
   }, [value]);
 
   return (
-    <AntdRadio.Group
-      className={className}
-      style={{ width: '100%' }}
-      {...groupProps}
-      value={state.selected}
-      onChange={handleChange}>
-      {state.loading ? (
-        <AntdSpin />
-      ) : (
+    <AntdSpin spinning={state.loading}>
+      <AntdRadio.Group
+        className={className}
+        style={{ width: '100%' }}
+        {...groupProps}
+        value={state.selected}
+        onChange={handleChange}>
         <div className={s.list}>
           {state.options.map(option => (
             <RadioButton
@@ -127,8 +125,8 @@ const GasFeeList: React.FC<GasFeeListProps> = props => {
             />
           ))}
         </div>
-      )}
-    </AntdRadio.Group>
+      </AntdRadio.Group>
+    </AntdSpin>
   );
 };
 

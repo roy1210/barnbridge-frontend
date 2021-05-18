@@ -3,7 +3,7 @@ import { Spin } from 'antd';
 import BigNumber from 'bignumber.js';
 import cn from 'classnames';
 import Erc20Contract from 'web3/erc20Contract';
-import { formatBONDValue, formatBigValue, isSmallBONDValue } from 'web3/utils';
+import { formatBONDValue, formatBigValue, formatToken, isSmallBONDValue } from 'web3/utils';
 
 import Button from 'components/antd/button';
 import Divider from 'components/antd/divider';
@@ -39,7 +39,7 @@ const VotingHeader: React.FC = () => {
 
   const [state, setState] = useMergeState<VotingHeaderState>(InitialState);
 
-  const { claimValue } = daoCtx.daoReward;
+  const { toClaim } = daoCtx.daoReward;
   const bondBalance = (BondToken.contract as Erc20Contract).balance?.unscaleBy(BondToken.decimals);
   const { votingPower, userLockedUntil, multiplier = 1 } = daoCtx.daoBarn;
 
@@ -52,11 +52,11 @@ const VotingHeader: React.FC = () => {
   function handleClaim() {
     setState({ claiming: true });
 
-    daoCtx.daoReward.actions
+    daoCtx.daoReward
       .claim()
       .catch(Error)
       .then(() => {
-        daoCtx.daoReward.reload();
+        daoCtx.daoReward.loadUserData().catch(Error);
         (BondToken.contract as Erc20Contract).loadBalance().catch(Error);
         setState({ claiming: false });
       });
@@ -73,16 +73,23 @@ const VotingHeader: React.FC = () => {
             Current reward
           </Text>
           <Grid flow="col" gap={16} align="center">
-            <Tooltip title={<Text type="p2">{formatBigValue(claimValue, BondToken.decimals)}</Text>}>
-              <Skeleton loading={claimValue === undefined}>
+            <Tooltip
+              title={
+                <Text type="p2">
+                  {formatToken(toClaim?.unscaleBy(BondToken.decimals), {
+                    decimals: BondToken.decimals,
+                  })}
+                </Text>
+              }>
+              <Skeleton loading={toClaim === undefined}>
                 <Text type="h3" weight="bold" color="primary">
-                  {isSmallBONDValue(claimValue) && '> '}
-                  {formatBONDValue(claimValue)}
+                  {isSmallBONDValue(toClaim) && '> '}
+                  {formatToken(toClaim?.unscaleBy(BondToken.decimals))}
                 </Text>
               </Skeleton>
             </Tooltip>
             <Icon name="static/token-bond" />
-            <Button type="light" disabled={claimValue?.isZero()} onClick={handleClaim}>
+            <Button type="light" disabled={toClaim?.isZero()} onClick={handleClaim}>
               {!state.claiming ? 'Claim' : <Spin spinning />}
             </Button>
           </Grid>
