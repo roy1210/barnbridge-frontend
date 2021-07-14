@@ -113,49 +113,51 @@ const PortfolioWithdraw: FC = () => {
 
   return (
     <>
-      <Form form={form} className="flex flow-row row-gap-32 p-24" disabled={isSubmitting}>
-        <div className="container-box flex flow-col col-gap-44">
-          <div className="flex flow-row row-gap-4">
-            <Text type="small" weight="semibold" color="secondary">
-              Portfolio balance
-            </Text>
-            <div className="flex flow-col col-gap-8 align-center">
-              <Text type="p1" weight="bold" color="primary">
-                {formatToken(stakedBalance) ?? '-'}
+      <Form form={form} disabled={isSubmitting}>
+        <div className="flex flow-row row-gap-32 p-24">
+          <div className="container-box flex flow-col col-gap-44">
+            <div className="flex flow-row row-gap-4">
+              <Text type="small" weight="semibold" color="secondary">
+                Portfolio balance
               </Text>
-              <Icon name={projectToken.icon as IconNames} />
+              <div className="flex flow-col col-gap-8 align-center">
+                <Text type="p1" weight="bold" color="primary">
+                  {formatToken(stakedBalance) ?? '-'}
+                </Text>
+                <Icon name={projectToken.icon as IconNames} />
+              </div>
+            </div>
+            <div className="flex flow-row row-gap-4">
+              <Text type="small" weight="semibold" color="secondary">
+                Wallet balance
+              </Text>
+              <div className="flex flow-col col-gap-8 align-center">
+                <Text type="p1" weight="bold" color="primary">
+                  {formatToken(bondBalance) ?? '-'}
+                </Text>
+                <Icon name={projectToken.icon as IconNames} />
+              </div>
             </div>
           </div>
-          <div className="flex flow-row row-gap-4">
-            <Text type="small" weight="semibold" color="secondary">
-              Wallet balance
-            </Text>
-            <div className="flex flow-col col-gap-8 align-center">
-              <Text type="p1" weight="bold" color="primary">
-                {formatToken(bondBalance) ?? '-'}
-              </Text>
-              <Icon name={projectToken.icon as IconNames} />
-            </div>
+          <FormItem name="amount" label="Amount">
+            {({ field }) => (
+              <TokenAmount
+                before={<Icon name={projectToken.icon as TokenIconNames} />}
+                max={stakedBalance}
+                disabled={isSubmitting}
+                decimals={projectToken.decimals}
+                slider
+                {...field}
+              />
+            )}
+          </FormItem>
+          <Alert message="Locked balances are not available for withdrawal until the timer ends. Withdrawal means you will stop earning staking rewards for the amount withdrawn." />
+          <div className="flex flow-col col-gap-12 align-center justify-end">
+            <button type="submit" className="button-primary" disabled={!canSubmit}>
+              {isSubmitting && <Spinner className="mr-4" />}
+              Withdraw
+            </button>
           </div>
-        </div>
-        <FormItem name="amount" label="Amount">
-          {({ field }) => (
-            <TokenAmount
-              before={<Icon name={projectToken.icon as TokenIconNames} />}
-              max={stakedBalance}
-              disabled={isSubmitting}
-              decimals={projectToken.decimals}
-              slider
-              {...field}
-            />
-          )}
-        </FormItem>
-        <Alert message="Locked balances are not available for withdrawal until the timer ends. Withdrawal means you will stop earning staking rewards for the amount withdrawn." />
-        <div className="flex flow-col col-gap-12 align-center justify-end">
-          <button type="submit" className="button-primary" disabled={!canSubmit}>
-            {isSubmitting && <Spinner className="mr-4" />}
-            Withdraw
-          </button>
         </div>
       </Form>
 

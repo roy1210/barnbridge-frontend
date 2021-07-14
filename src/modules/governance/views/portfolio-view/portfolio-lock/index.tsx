@@ -156,65 +156,67 @@ const PortfolioLock: FC = () => {
 
   return (
     <>
-      <Form form={form} className="flex flow-row row-gap-32 p-24" disabled={isSubmitting}>
-        <div className="container-box flex flow-col col-gap-44">
-          <div className="flex flow-row row-gap-4">
-            <Text type="small" weight="semibold" color="secondary">
-              Portfolio balance
-            </Text>
-            <div className="flex flow-col col-gap-8 align-center">
-              <Text type="p1" weight="bold" color="primary">
-                {formatToken(stakedBalance) ?? '-'}
+      <Form form={form} disabled={isSubmitting}>
+        <div className="flex flow-row row-gap-32 p-24">
+          <div className="container-box flex flow-col col-gap-44">
+            <div className="flex flow-row row-gap-4">
+              <Text type="small" weight="semibold" color="secondary">
+                Portfolio balance
               </Text>
-              <Icon name={projectToken.icon as IconNames} />
-            </div>
-          </div>
-          <div className="flex flow-row row-gap-4">
-            <Text type="small" weight="semibold" color="secondary">
-              Lock duration
-            </Text>
-            <div className="flex flow-col col-gap-8 align-center">
-              <UseLeftTime end={(userLockedUntil ?? getUnixTime(new Date())) * 1_000} delay={1_000}>
-                {leftTime => (
-                  <Text type="p1" weight="bold" color="primary">
-                    {getFormattedDuration(leftTime / 1_000)?.trim() || '0s'}
-                  </Text>
-                )}
-              </UseLeftTime>
-            </div>
-          </div>
-        </div>
-        <FormItem name="lockEndDate" label="Lock end date">
-          {({ field: { ref, ...field } }) => (
-            <div className="flex flow-row row-gap-16">
-              <DatePicker showTime showNow={false} format="DD/MM/YYYY HH:mm" size="large" {...field} />
-              <div className="flexbox-grid" style={{ '--gap': '8px' } as React.CSSProperties}>
-                {DURATION_OPTIONS.map(item => (
-                  <button
-                    key={item}
-                    type="button"
-                    className={classnames(
-                      'flex justify-center ph-24 pv-16',
-                      field.value?.valueOf() === getLockEndDate(new Date(), item)?.valueOf()
-                        ? 'button-primary'
-                        : 'button-ghost-monochrome',
-                    )}
-                    onClick={() => {
-                      form.updateValue('lockEndDate', getLockEndDate(new Date(), item));
-                    }}>
-                    {item}
-                  </button>
-                ))}
+              <div className="flex flow-col col-gap-8 align-center">
+                <Text type="p1" weight="bold" color="primary">
+                  {formatToken(stakedBalance) ?? '-'}
+                </Text>
+                <Icon name={projectToken.icon as IconNames} />
               </div>
             </div>
-          )}
-        </FormItem>
-        <Alert message="All locked balances will be unavailable for withdrawal until the lock timer ends. All future deposits will be locked for the same time." />
-        <div className="flex flow-col col-gap-12 align-center justify-end">
-          <button type="submit" className="button-primary" disabled={!canSubmit}>
-            {isSubmitting && <Spinner className="mr-4" />}
-            Lock
-          </button>
+            <div className="flex flow-row row-gap-4">
+              <Text type="small" weight="semibold" color="secondary">
+                Lock duration
+              </Text>
+              <div className="flex flow-col col-gap-8 align-center">
+                <UseLeftTime end={(userLockedUntil ?? getUnixTime(new Date())) * 1_000} delay={1_000}>
+                  {leftTime => (
+                    <Text type="p1" weight="bold" color="primary">
+                      {getFormattedDuration(leftTime / 1_000)?.trim() || '0s'}
+                    </Text>
+                  )}
+                </UseLeftTime>
+              </div>
+            </div>
+          </div>
+          <FormItem name="lockEndDate" label="Lock end date">
+            {({ field: { ref, ...field } }) => (
+              <div className="flex flow-row row-gap-16">
+                <DatePicker showTime showNow={false} format="DD/MM/YYYY HH:mm" size="large" {...field} />
+                <div className="flexbox-grid" style={{ '--gap': '8px' } as React.CSSProperties}>
+                  {DURATION_OPTIONS.map(item => (
+                    <button
+                      key={item}
+                      type="button"
+                      className={classnames(
+                        'flex justify-center ph-24 pv-16',
+                        field.value?.valueOf() === getLockEndDate(new Date(), item)?.valueOf()
+                          ? 'button-primary'
+                          : 'button-ghost-monochrome',
+                      )}
+                      onClick={() => {
+                        form.updateValue('lockEndDate', getLockEndDate(new Date(), item));
+                      }}>
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </FormItem>
+          <Alert message="All locked balances will be unavailable for withdrawal until the lock timer ends. All future deposits will be locked for the same time." />
+          <div className="flex flow-col col-gap-12 align-center justify-end">
+            <button type="submit" className="button-primary" disabled={!canSubmit}>
+              {isSubmitting && <Spinner className="mr-4" />}
+              Lock
+            </button>
+          </div>
         </div>
       </Form>
 

@@ -120,7 +120,7 @@ const PoolChart: FC<Props> = props => {
         const historyMap = new Map<string, HistoryChartItem>();
 
         activeYfPool.tokens.forEach(token => {
-          const tokenHistory = result[token.address]; /// TODO: discuss
+          const tokenHistory = result[token.address];
 
           Object.entries(tokenHistory).forEach(([timestamp, item]) => {
             const dt = getUnixTime(new Date(timestamp));

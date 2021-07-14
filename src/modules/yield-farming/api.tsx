@@ -107,8 +107,20 @@ const YfAPIProvider: FC = props => {
         if (result.status !== 200) {
           return Promise.reject(new Error(result.data));
         }
+        // re-map structure to have address keys in lower-case
+        const mappedResults = Object.entries(result.data).reduce(
+          (a, [key, value]) =>
+            Object.assign(a, {
+              [key.toLowerCase()]: value,
+            }),
+          {},
+        );
 
-        return result.data;
+        return new Proxy(mappedResults, {
+          get: function (target, name: string) {
+            return target[name.toLowerCase()];
+          },
+        });
       });
   }
 

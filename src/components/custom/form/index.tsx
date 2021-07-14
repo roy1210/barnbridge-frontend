@@ -123,7 +123,7 @@ export function Form<V extends FieldValues = FieldValues>(props: CP<FormProps<V>
   return (
     <InternalContext.Provider value={value as InternalContextType}>
       <form className={classnames(s.form, className, disabled && s.disabled)} onSubmit={handleSubmit}>
-        {children}
+        <fieldset disabled={disabled}>{children}</fieldset>
       </form>
     </InternalContext.Provider>
   );

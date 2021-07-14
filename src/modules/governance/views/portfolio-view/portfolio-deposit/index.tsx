@@ -145,58 +145,60 @@ const PortfolioDeposit: FC = () => {
           Faucets
         </Link>
       )}
-      <Form form={form} className="flex flow-row row-gap-32 p-24" disabled={isSubmitting}>
-        <div className="container-box flex flow-col col-gap-44">
-          <div className="flex flow-row row-gap-4">
-            <Text type="small" weight="semibold" color="secondary">
-              Portfolio balance
-            </Text>
-            <div className="flex flow-col col-gap-8 align-center">
-              <Text type="p1" weight="bold" color="primary">
-                {formatToken(stakedBalance) ?? '-'}
+      <Form form={form} disabled={isSubmitting}>
+        <div className="flex flow-row row-gap-32 p-24">
+          <div className="container-box flex flow-col col-gap-44">
+            <div className="flex flow-row row-gap-4">
+              <Text type="small" weight="semibold" color="secondary">
+                Portfolio balance
               </Text>
-              <Icon name={projectToken.icon as IconNames} />
+              <div className="flex flow-col col-gap-8 align-center">
+                <Text type="p1" weight="bold" color="primary">
+                  {formatToken(stakedBalance) ?? '-'}
+                </Text>
+                <Icon name={projectToken.icon as IconNames} />
+              </div>
+            </div>
+            <div className="flex flow-row row-gap-4">
+              <Text type="small" weight="semibold" color="secondary">
+                Wallet balance
+              </Text>
+              <div className="flex flow-col col-gap-8 align-center">
+                <Text type="p1" weight="bold" color="primary">
+                  {formatToken(bondBalance) ?? '-'}
+                </Text>
+                <Icon name={projectToken.icon as IconNames} />
+              </div>
             </div>
           </div>
-          <div className="flex flow-row row-gap-4">
-            <Text type="small" weight="semibold" color="secondary">
-              Wallet balance
-            </Text>
-            <div className="flex flow-col col-gap-8 align-center">
-              <Text type="p1" weight="bold" color="primary">
-                {formatToken(bondBalance) ?? '-'}
-              </Text>
-              <Icon name={projectToken.icon as IconNames} />
-            </div>
+          <FormItem name="amount" label="Amount">
+            {({ field }) => (
+              <TokenAmount
+                before={<Icon name={projectToken.icon as TokenIconNames} />}
+                max={bondBalance}
+                disabled={isSubmitting}
+                decimals={projectToken.decimals}
+                slider
+                {...field}
+              />
+            )}
+          </FormItem>
+          <Alert message="Deposits made after you have an ongoing lock will be added to the locked balance and will be subjected to the same lock timer." />
+          <div className="flex flow-col col-gap-12 align-center justify-end">
+            {!isEnabled && (
+              <>
+                <button type="button" className="button-primary align-self-start" onClick={handleTokenEnable}>
+                  {isEnabling && <Spinner className="mr-4" />}
+                  Enable {projectToken.symbol}
+                </button>
+                <Icon name="arrow-forward" />
+              </>
+            )}
+            <button type="submit" className="button-primary align-self-start" disabled={!canSubmit}>
+              {isSubmitting && <Spinner className="mr-4" />}
+              Deposit
+            </button>
           </div>
-        </div>
-        <FormItem name="amount" label="Amount">
-          {({ field }) => (
-            <TokenAmount
-              before={<Icon name={projectToken.icon as TokenIconNames} />}
-              max={bondBalance}
-              disabled={isSubmitting}
-              decimals={projectToken.decimals}
-              slider
-              {...field}
-            />
-          )}
-        </FormItem>
-        <Alert message="Deposits made after you have an ongoing lock will be added to the locked balance and will be subjected to the same lock timer." />
-        <div className="flex flow-col col-gap-12 align-center justify-end">
-          {!isEnabled && (
-            <>
-              <button type="button" className="button-primary align-self-start" onClick={handleTokenEnable}>
-                {isEnabling && <Spinner className="mr-4" />}
-                Enable {projectToken.symbol}
-              </button>
-              <Icon name="arrow-forward" />
-            </>
-          )}
-          <button type="submit" className="button-primary align-self-start" disabled={!canSubmit}>
-            {isSubmitting && <Spinner className="mr-4" />}
-            Deposit
-          </button>
         </div>
       </Form>
 

@@ -150,73 +150,75 @@ const PortfolioDelegate: FC = () => {
 
   return (
     <>
-      <Form form={form} className="flex flow-row row-gap-32 p-24" disabled={isSubmitting}>
-        <div className="container-box flex flow-col col-gap-44">
-          <div className="flex flow-row row-gap-4">
-            <Text type="small" weight="semibold" color="secondary">
-              Current voting type
-            </Text>
-            <div className="flex flow-col col-gap-8 align-center">
-              <Text type="p1" weight="bold" color="primary">
-                {isDelegated ? 'Delegate voting' : 'Manual voting'}
-              </Text>
-            </div>
-          </div>
-          {isDelegated && (
+      <Form form={form} disabled={isSubmitting}>
+        <div className="flex flow-row row-gap-32 p-24">
+          <div className="container-box flex flow-col col-gap-44">
             <div className="flex flow-row row-gap-4">
               <Text type="small" weight="semibold" color="secondary">
-                Delegated address
+                Current voting type
               </Text>
               <div className="flex flow-col col-gap-8 align-center">
-                <ExternalLink href={getEtherscanAddressUrl(userDelegatedTo)}>
-                  <Text type="p1" weight="bold" color="primary">
-                    {shortenAddr(userDelegatedTo)}
-                  </Text>
-                </ExternalLink>
+                <Text type="p1" weight="bold" color="primary">
+                  {isDelegated ? 'Delegate voting' : 'Manual voting'}
+                </Text>
               </div>
             </div>
-          )}
-        </div>
-        <FormItem name="votingType" label="Voting type">
-          {({ field }) => (
-            <>
-              <RadioCard
-                selected={field.value === MANUAL_KEY}
-                onClick={() => form.updateValue('votingType', MANUAL_KEY)}>
-                <div className="flex flow-col col-gap-40 align-center">
-                  <Text type="p1" weight="semibold" color="primary">
-                    Manual voting
-                  </Text>
-                  {field.value === MANUAL_KEY && <StatusTag text="ACTIVE" color="green" />}
+            {isDelegated && (
+              <div className="flex flow-row row-gap-4">
+                <Text type="small" weight="semibold" color="secondary">
+                  Delegated address
+                </Text>
+                <div className="flex flow-col col-gap-8 align-center">
+                  <ExternalLink href={getEtherscanAddressUrl(userDelegatedTo)}>
+                    <Text type="p1" weight="bold" color="primary">
+                      {shortenAddr(userDelegatedTo)}
+                    </Text>
+                  </ExternalLink>
                 </div>
-              </RadioCard>
-              <RadioCard
-                selected={field.value === DELEGATED_KEY}
-                onClick={() => form.updateValue('votingType', DELEGATED_KEY)}>
-                <div className="flex flow-col col-gap-40 align-center">
-                  <Text type="p1" weight="semibold" color="primary">
-                    Delegate voting
-                  </Text>
-                  {field.value === DELEGATED_KEY && <StatusTag text="ACTIVE" color="green" />}
-                </div>
-              </RadioCard>
-            </>
-          )}
-        </FormItem>
-        {votingType === DELEGATED_KEY && (
-          <FormItem name="delegateAddress" label="Address">
-            {({ field }) => <TokenInput {...field} />}
+              </div>
+            )}
+          </div>
+          <FormItem name="votingType" label="Voting type">
+            {({ field }) => (
+              <>
+                <RadioCard
+                  selected={field.value === MANUAL_KEY}
+                  onClick={() => form.updateValue('votingType', MANUAL_KEY)}>
+                  <div className="flex flow-col col-gap-40 align-center">
+                    <Text type="p1" weight="semibold" color="primary">
+                      Manual voting
+                    </Text>
+                    {field.value === MANUAL_KEY && <StatusTag text="ACTIVE" color="green" />}
+                  </div>
+                </RadioCard>
+                <RadioCard
+                  selected={field.value === DELEGATED_KEY}
+                  onClick={() => form.updateValue('votingType', DELEGATED_KEY)}>
+                  <div className="flex flow-col col-gap-40 align-center">
+                    <Text type="p1" weight="semibold" color="primary">
+                      Delegate voting
+                    </Text>
+                    {field.value === DELEGATED_KEY && <StatusTag text="ACTIVE" color="green" />}
+                  </div>
+                </RadioCard>
+              </>
+            )}
           </FormItem>
-        )}
-        <Alert message="Delegating your voting power to this address means that they will be able to vote in your place. You can’t delegate the voting bonus, only the staked balance." />
-        {isLocked && (
-          <Alert message="Switching back to manual voting while a lock is active will put the amount back under lock. Delegation does not stop the lock timer." />
-        )}
-        <div className="flex flow-col col-gap-12 align-center justify-end">
-          <button type="submit" className="button-primary" disabled={!canSubmit}>
-            {isSubmitting && <Spinner className="mr-4" />}
-            {votingType === DELEGATED_KEY ? 'Delegate' : 'Stop Delegate'}
-          </button>
+          {votingType === DELEGATED_KEY && (
+            <FormItem name="delegateAddress" label="Address">
+              {({ field }) => <TokenInput {...field} />}
+            </FormItem>
+          )}
+          <Alert message="Delegating your voting power to this address means that they will be able to vote in your place. You can’t delegate the voting bonus, only the staked balance." />
+          {isLocked && (
+            <Alert message="Switching back to manual voting while a lock is active will put the amount back under lock. Delegation does not stop the lock timer." />
+          )}
+          <div className="flex flow-col col-gap-12 align-center justify-end">
+            <button type="submit" className="button-primary" disabled={!canSubmit}>
+              {isSubmitting && <Spinner className="mr-4" />}
+              {votingType === DELEGATED_KEY ? 'Delegate' : 'Stop Delegate'}
+            </button>
+          </div>
         </div>
       </Form>
 
