@@ -8,8 +8,8 @@ import Table from 'components/antd/table';
 import ExternalLink from 'components/custom/externalLink';
 import Identicon from 'components/custom/identicon';
 import { Text } from 'components/custom/typography';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { APIVoterEntity, useDaoAPI } from 'modules/governance/api';
+import { useWeb3 } from 'providers/web3Provider';
 
 const Columns: ColumnsType<APIVoterEntity> = [
   {

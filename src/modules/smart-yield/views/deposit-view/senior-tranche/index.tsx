@@ -9,7 +9,6 @@ import differenceInDays from 'date-fns/differenceInDays';
 import isAfter from 'date-fns/isAfter';
 import isBefore from 'date-fns/isBefore';
 import startOfDay from 'date-fns/startOfDay';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 import { formatBigValue, formatPercent, getHumanValue, getNonHumanValue } from 'web3/utils';
 
 import DatePicker from 'components/antd/datepicker';
@@ -26,6 +25,7 @@ import TxConfirmModal from 'modules/smart-yield/components/tx-confirm-modal';
 import SYControllerContract from 'modules/smart-yield/contracts/syControllerContract';
 import SYSmartYieldContract from 'modules/smart-yield/contracts/sySmartYieldContract';
 import { SYPool, useSYPool } from 'modules/smart-yield/providers/pool-provider';
+import { useContractManager } from 'providers/contractManagerProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { DURATION_1_MONTH, DURATION_1_YEAR, DURATION_3_MONTHS, DURATION_6_MONTHS, getDurationDate } from 'utils/date';

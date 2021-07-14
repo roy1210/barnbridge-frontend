@@ -10,9 +10,9 @@ import ExternalLink from 'components/custom/externalLink';
 import Icon, { IconNames } from 'components/custom/icon';
 import { Tabs } from 'components/custom/tabs';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { APIYFPoolActionType, APIYFPoolTransaction, useYfAPI } from 'modules/yield-farming/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
+import { useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { useYFPools } from '../../providers/pools-provider';

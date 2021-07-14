@@ -11,10 +11,10 @@ import ExternalLink from 'components/custom/externalLink';
 import IconBubble from 'components/custom/icon-bubble';
 import StatusTag from 'components/custom/status-tag';
 import { Text } from 'components/custom/typography';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { mergeState } from 'hooks/useMergeState';
 import { APISYSeniorRedeem, useSyAPI } from 'modules/smart-yield/api';
 import { PoolsSYPool, usePools } from 'modules/smart-yield/providers/pools-provider';
+import { useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 import s from './s.module.scss';

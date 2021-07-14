@@ -7,8 +7,8 @@ import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Hint, Text } from 'components/custom/typography';
-import { useConfig } from 'components/providers/configProvider';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
+import { useConfig } from 'providers/configProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { useDAO } from '../../../../components/dao-provider';
 

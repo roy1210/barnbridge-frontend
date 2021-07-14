@@ -1,7 +1,7 @@
 import { FC, createContext, useContext } from 'react';
 import BigNumber from 'bignumber.js';
 
-import { useConfig } from 'components/providers/configProvider';
+import { useConfig } from 'providers/configProvider';
 
 import { InvariantContext } from 'utils/context';
 import { PaginatedResult, queryfy } from 'utils/fetch';

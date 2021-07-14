@@ -7,7 +7,7 @@ import Modal, { ModalProps } from 'components/antd/modal';
 import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';
 

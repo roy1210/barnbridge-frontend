@@ -6,7 +6,7 @@ import { formatToken } from 'web3/utils';
 
 import Icon from 'components/custom/icon';
 import { Hint, Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import PoolHarvestModal from '../../components/pool-harvest-modal';

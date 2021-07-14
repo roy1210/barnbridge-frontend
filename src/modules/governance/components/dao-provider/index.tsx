@@ -1,15 +1,15 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
-import { useContract } from 'web3/components/contractManagerProvider';
 import Erc20Contract from 'web3/erc20Contract';
 
-import { useConfig } from 'components/providers/configProvider';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import useMergeState from 'hooks/useMergeState';
 import { APIProposalStateId } from 'modules/governance/api';
 import DaoBarnContract from 'modules/governance/contracts/daoBarn';
 import DaoGovernanceContract from 'modules/governance/contracts/daoGovernance';
 import DaoRewardContract from 'modules/governance/contracts/daoReward';
+import { useConfig } from 'providers/configProvider';
+import { useContract } from 'providers/contractManagerProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

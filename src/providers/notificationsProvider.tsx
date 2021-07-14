@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useLocalStorage } from 'react-use-storage';
 
 import { Toast } from 'components/custom/notification';
-import { useConfig } from 'components/providers/configProvider';
+import { useConfig } from 'providers/configProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

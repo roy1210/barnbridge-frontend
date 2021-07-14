@@ -11,8 +11,6 @@ import ExternalLink from 'components/custom/externalLink';
 import Grid from 'components/custom/grid';
 import IconBubble from 'components/custom/icon-bubble';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { mergeState } from 'hooks/useMergeState';
 import {
   APISYTxHistoryType,
@@ -26,6 +24,8 @@ import { usePools } from 'modules/smart-yield/providers/pools-provider';
 import HistoryTableFilter, {
   HistoryTableFilterValues,
 } from 'modules/smart-yield/views/portfolio-view/overview/history-table-filter';
+import { useKnownTokens } from 'providers/knownTokensProvider';
+import { useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 type TableEntity = APISYUserTxHistory & {

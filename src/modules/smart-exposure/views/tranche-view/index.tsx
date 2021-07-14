@@ -7,8 +7,8 @@ import { formatPercent } from 'web3/utils';
 // import { DropdownList } from 'components/custom/dropdown';
 import Icon from 'components/custom/icon';
 import IconsPair from 'components/custom/icons-pair';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { TrancheApiType, useSeAPI } from 'modules/smart-exposure/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { Charts } from './charts';

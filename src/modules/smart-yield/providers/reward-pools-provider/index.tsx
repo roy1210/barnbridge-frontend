@@ -1,11 +1,11 @@
 import React, { FC, createContext, useCallback, useContext, useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useReload } from 'hooks/useReload';
 import { useSyAPI } from 'modules/smart-yield/api';
 import { SYRewardPoolEntity } from 'modules/smart-yield/models/syRewardPoolEntity';
+import { useContractManager } from 'providers/contractManagerProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

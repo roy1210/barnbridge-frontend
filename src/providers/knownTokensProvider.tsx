@@ -1,17 +1,17 @@
 import { FC, createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
-import { useContractManager, useErc20Contract } from 'web3/components/contractManagerProvider';
 import Erc20Contract from 'web3/erc20Contract';
 import { formatUSD } from 'web3/utils';
 import Web3Contract, { createAbiItem } from 'web3/web3Contract';
 
 import { TokenIconNames } from 'components/custom/icon';
-import { isDevelopmentMode, useConfig } from 'components/providers/configProvider';
-import { useNetwork } from 'components/providers/networkProvider';
-import { MainnetHttpsWeb3Provider, useWeb3 } from 'components/providers/web3Provider';
 import { useReload } from 'hooks/useReload';
 import { PolygonNetwork } from 'networks/polygon';
+import { isDevelopmentMode, useConfig } from 'providers/configProvider';
+import { useContractManager, useErc20Contract } from 'providers/contractManagerProvider';
+import { useNetwork } from 'providers/networkProvider';
+import { MainnetHttpsWeb3Provider, useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

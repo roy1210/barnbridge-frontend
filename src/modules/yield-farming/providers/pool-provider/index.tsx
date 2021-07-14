@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import BigNumber from 'bignumber.js';
 import Erc20Contract from 'web3/erc20Contract';
 
-import { useConfig } from 'components/providers/configProvider';
-import { KnownTokens, useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useReload } from 'hooks/useReload';
+import { useConfig } from 'providers/configProvider';
+import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { YfPoolMeta, useYFPools } from '../../providers/pools-provider';

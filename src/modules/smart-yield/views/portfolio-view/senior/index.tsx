@@ -1,7 +1,6 @@
 import React from 'react';
 import AntdSpin from 'antd/lib/spin';
 import BigNumber from 'bignumber.js';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 import { getHumanValue } from 'web3/utils';
 
 import Tabs from 'components/antd/tabs';
@@ -12,6 +11,7 @@ import PortfolioValue from 'modules/smart-yield/components/portfolio-value';
 import SYSeniorBondContract from 'modules/smart-yield/contracts/sySeniorBondContract';
 import SYSmartYieldContract, { SYSeniorBondToken } from 'modules/smart-yield/contracts/sySmartYieldContract';
 import ActivePosition from 'modules/smart-yield/views/portfolio-view/senior/active-position';
+import { useContractManager } from 'providers/contractManagerProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import PortfolioBalance from '../../../components/portfolio-balance';

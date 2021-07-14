@@ -10,10 +10,10 @@ import ExternalLink from 'components/custom/externalLink';
 import IconBubble from 'components/custom/icon-bubble';
 import TableFilter, { TableFilterType } from 'components/custom/table-filter';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { APISYSeniorBonds, useSyAPI } from 'modules/smart-yield/api';
 import { SYPool, useSYPool } from 'modules/smart-yield/providers/pool-provider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
+import { useWeb3 } from 'providers/web3Provider';
 
 type TableEntity = APISYSeniorBonds & {
   poolEntity?: SYPool;

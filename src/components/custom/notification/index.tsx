@@ -6,17 +6,17 @@ import * as dateFns from 'date-fns';
 import format from 'date-fns/format';
 import isThisWeek from 'date-fns/isThisWeek';
 import isToday from 'date-fns/isToday';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 import Erc20Contract from 'web3/erc20Contract';
 import { formatToken, getHumanValue, shortenAddr } from 'web3/utils';
 
 import Icon, { IconNames } from 'components/custom/icon';
 import IconNotification from 'components/custom/icon-notification';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
-import { NotificationType, useNotifications } from 'components/providers/notificationsProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { useReload } from 'hooks/useReload';
+import { useContractManager } from 'providers/contractManagerProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
+import { NotificationType, useNotifications } from 'providers/notificationsProvider';
+import { useWeb3 } from 'providers/web3Provider';
 
 import ExternalLink from '../externalLink';
 import NotificationIcon from './icon';

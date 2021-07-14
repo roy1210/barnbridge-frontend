@@ -11,9 +11,9 @@ import Icon from 'components/custom/icon';
 import IconBubble from 'components/custom/icon-bubble';
 import { AprLabel } from 'components/custom/label';
 import { Hint, Text } from 'components/custom/typography';
-import { KnownTokens, useKnownTokens } from 'components/providers/knownTokensProvider';
 import { SYRewardPoolEntity } from 'modules/smart-yield/models/syRewardPoolEntity';
 import { getKnownMarketById } from 'modules/smart-yield/providers/markets';
+import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import s from './s.module.scss';

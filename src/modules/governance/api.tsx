@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import QueryString from 'query-string';
 import { getHumanValue } from 'web3/utils';
 
-import { useConfig } from 'components/providers/configProvider';
+import { useConfig } from 'providers/configProvider';
 
 import { InvariantContext } from 'utils/context';
 import { PaginatedResult } from 'utils/fetch';

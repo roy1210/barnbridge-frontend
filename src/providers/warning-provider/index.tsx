@@ -9,7 +9,7 @@ import { Text } from 'components/custom/typography';
 
 import { InvariantContext } from 'utils/context';
 
-import s from './s.module.scss';
+import s from 'providers/warning-provider/s.module.scss';
 
 export type WarningContextType = {
   addWarn: (opts: WarnType) => () => void;

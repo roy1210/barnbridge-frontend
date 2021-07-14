@@ -3,8 +3,8 @@ import { isMobile } from 'react-device-detect';
 import { Redirect, Route, Switch } from 'react-router-dom';
 import AntdSpin from 'antd/lib/spin';
 
-import { useWarning } from 'components/providers/warning-provider';
 import YfAPIProvider from 'modules/yield-farming/api';
+import { useWarning } from 'providers/warning-provider';
 
 import YfPoolsProvider from './providers/pools-provider';
 

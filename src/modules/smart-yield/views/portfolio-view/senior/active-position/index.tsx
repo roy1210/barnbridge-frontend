@@ -1,7 +1,6 @@
 import React from 'react';
 import BigNumber from 'bignumber.js';
 import format from 'date-fns/format';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 import { formatBigValue, formatPercent, formatUSDValue, getHumanValue } from 'web3/utils';
 
 import Button from 'components/antd/button';
@@ -18,6 +17,7 @@ import TxConfirmModal, { ConfirmTxModalArgs } from 'modules/smart-yield/componen
 import SYControllerContract from 'modules/smart-yield/contracts/syControllerContract';
 import { SYSeniorBondToken } from 'modules/smart-yield/contracts/sySmartYieldContract';
 import { PoolsSYPool, usePools } from 'modules/smart-yield/providers/pools-provider';
+import { useContractManager } from 'providers/contractManagerProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { getFormattedDuration } from 'utils';

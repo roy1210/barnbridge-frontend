@@ -4,7 +4,7 @@ import Button from 'components/antd/button';
 import Modal, { ModalProps } from 'components/antd/modal';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
-import { useNetwork } from 'components/providers/networkProvider';
+import { useNetwork } from 'providers/networkProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 export type UnsupportedChainModalProps = ModalProps;

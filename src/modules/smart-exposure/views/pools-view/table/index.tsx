@@ -6,8 +6,8 @@ import Icon from 'components/custom/icon';
 import { TranchePercentageProgress } from 'components/custom/progress';
 import { ColumnType, Table } from 'components/custom/table';
 import { InfoTooltip } from 'components/custom/tooltip';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { PoolApiType, TranchesItemApiType, useSeAPI } from 'modules/smart-exposure/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 const tableColumns: ColumnType<TranchesItemApiType>[] = [
   {

@@ -14,9 +14,9 @@ import { Form, FormItem, useForm } from 'components/custom/form';
 import Icon, { IconNames } from 'components/custom/icon';
 import { Spinner } from 'components/custom/spinner';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { UseLeftTime } from 'hooks/useLeftTime';
 import { useDAO } from 'modules/governance/components/dao-provider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';
 

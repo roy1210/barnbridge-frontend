@@ -7,9 +7,9 @@ import Icon, { IconNames } from 'components/custom/icon';
 import IconsPair from 'components/custom/icons-pair';
 import { ColumnType, Table, TableFooter } from 'components/custom/table';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { TransactionApiType, useSeAPI } from 'modules/smart-exposure/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
+import { useWeb3 } from 'providers/web3Provider';
 
 export const TransactionsTable = ({
   transactionType,

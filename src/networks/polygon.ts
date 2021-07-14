@@ -1,6 +1,6 @@
 import { toHex } from 'web3-utils';
 
-import { isDevelopmentMode } from 'components/providers/configProvider';
+import { isDevelopmentMode } from 'providers/configProvider';
 import { MetamaskAddEthereumChain } from 'wallets/connectors/metamask';
 
 import { DEFAULT_RPC_POOLING_INTERVAL, NetworkConfig, Web3Network } from 'networks/types';

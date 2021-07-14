@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect } from 'react';
-import { useContract } from 'web3/components/contractManagerProvider';
 
-import { useConfig } from 'components/providers/configProvider';
 import { useReload } from 'hooks/useReload';
 import SeEPoolContract from 'modules/smart-exposure/contracts/seEPoolContract';
 import SeEPoolHelperContract from 'modules/smart-exposure/contracts/seEPoolHelperContract';
 import SeEPoolPeripheryContract from 'modules/smart-exposure/contracts/seEPoolPeripheryContract';
+import { useConfig } from 'providers/configProvider';
+import { useContract } from 'providers/contractManagerProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

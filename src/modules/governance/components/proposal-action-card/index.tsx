@@ -11,7 +11,7 @@ import ExternalLink from 'components/custom/externalLink';
 import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
-import { useWeb3 } from 'components/providers/web3Provider';
+import { useWeb3 } from 'providers/web3Provider';
 
 import s from './s.module.scss';
 

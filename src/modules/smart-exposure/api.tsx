@@ -1,7 +1,7 @@
 import { FC, createContext, useContext } from 'react';
 
-import { useConfig } from 'components/providers/configProvider';
-import { KnownTokens } from 'components/providers/knownTokensProvider';
+import { useConfig } from 'providers/configProvider';
+import { KnownTokens } from 'providers/knownTokensProvider';
 
 import { InvariantContext } from 'utils/context';
 import { processResponse, queryfy } from 'utils/fetch';

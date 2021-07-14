@@ -7,11 +7,11 @@ import { formatUSD } from 'web3/utils';
 import Icon, { IconNames } from 'components/custom/icon';
 import IconBubble from 'components/custom/icon-bubble';
 import { Text } from 'components/custom/typography';
-import { useNetwork } from 'components/providers/networkProvider';
 import { Markets, SYMarketMeta } from 'modules/smart-yield/api';
 import { usePools } from 'modules/smart-yield/providers/pools-provider';
 import PoolsTable from 'modules/smart-yield/views/markets-view/pools-table';
 import { PolygonNetwork } from 'networks/polygon';
+import { useNetwork } from 'providers/networkProvider';
 
 const MarketsView: FC = () => {
   const { activeNetwork } = useNetwork();

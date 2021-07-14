@@ -7,11 +7,11 @@ import Icon from 'components/custom/icon';
 import IconBubble from 'components/custom/icon-bubble';
 import { AprLabel } from 'components/custom/label';
 import { Text } from 'components/custom/typography';
-import { KnownTokens, useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useRewardPool } from 'modules/smart-yield/providers/reward-pool-provider';
 import Stake from 'modules/smart-yield/views/pool-view/stake';
 import Statistics from 'modules/smart-yield/views/pool-view/statistics';
 import Transactions from 'modules/smart-yield/views/pool-view/transactions';
+import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import s from './s.module.scss';

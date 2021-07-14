@@ -1,12 +1,12 @@
 import React, { FC, createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import BigNumber from 'bignumber.js';
-import { useContract } from 'web3/components/contractManagerProvider';
 
-import { useConfig } from 'components/providers/configProvider';
-import { TokenMeta, useKnownTokens } from 'components/providers/knownTokensProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { YfPoolContract } from 'modules/yield-farming/contracts/yfPool';
 import { YfStakingContract } from 'modules/yield-farming/contracts/yfStaking';
+import { useConfig } from 'providers/configProvider';
+import { useContract } from 'providers/contractManagerProvider';
+import { TokenMeta, useKnownTokens } from 'providers/knownTokensProvider';
+import { useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

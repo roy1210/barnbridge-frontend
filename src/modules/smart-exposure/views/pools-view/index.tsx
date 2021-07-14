@@ -7,8 +7,8 @@ import Icon, { IconNames } from 'components/custom/icon';
 import IconsPair from 'components/custom/icons-pair';
 import { InfoTooltip } from 'components/custom/tooltip';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { PoolApiType, useSeAPI } from 'modules/smart-exposure/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { PairsTable } from './table';
 

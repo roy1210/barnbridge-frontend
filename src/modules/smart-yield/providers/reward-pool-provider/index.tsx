@@ -1,12 +1,12 @@
 import React, { FC, createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 
-import { TokenMeta, useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useReload } from 'hooks/useReload';
 import useRouteQuery from 'hooks/useRouteQuery';
 import { useSyAPI } from 'modules/smart-yield/api';
 import { SYRewardPoolEntity } from 'modules/smart-yield/models/syRewardPoolEntity';
 import { MarketMeta, getKnownMarketById } from 'modules/smart-yield/providers/markets';
+import { useContractManager } from 'providers/contractManagerProvider';
+import { TokenMeta, useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

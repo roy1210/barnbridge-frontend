@@ -1,13 +1,13 @@
 import { FC, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useSessionStorage } from 'react-use-storage';
 
-import { isDevelopmentMode, isProductionMode } from 'components/providers/configProvider';
 import { GoerliNetwork } from 'networks/goerli';
 import { KovanNetwork } from 'networks/kovan';
 import { MainnetNetwork } from 'networks/mainnet';
 import { MumbaiNetwork } from 'networks/mumbai';
 import { PolygonNetwork } from 'networks/polygon';
 import { TestnetNetwork } from 'networks/testnet';
+import { isDevelopmentMode, isProductionMode } from 'providers/configProvider';
 
 import { InvariantContext } from 'utils/context';
 

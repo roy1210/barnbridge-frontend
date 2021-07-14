@@ -12,9 +12,9 @@ import Tooltip from 'components/antd/tooltip';
 import Icon from 'components/custom/icon';
 import { TokenAmount, TokenSelect } from 'components/custom/token-amount-new';
 import { Text } from 'components/custom/typography';
-import { useConfig } from 'components/providers/configProvider';
-import { KnownTokens, useKnownTokens } from 'components/providers/knownTokensProvider';
 import { YfPoolContract } from 'modules/yield-farming/contracts/yfPool';
+import { useConfig } from 'providers/configProvider';
+import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
 
 import { useYfPool } from '../../providers/pool-provider';
 import { useYFPools } from '../../providers/pools-provider';

@@ -3,14 +3,14 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import AntdSpin from 'antd/lib/spin';
 
 import ErrorBoundary from 'components/custom/error-boundary';
-import { useConfig } from 'components/providers/configProvider';
-import { useNetwork } from 'components/providers/networkProvider';
-import WarningProvider from 'components/providers/warning-provider';
 import LayoutFooter from 'layout/components/layout-footer';
 import LayoutHeader from 'layout/components/layout-header';
 import LayoutSideNav from 'layout/components/layout-side-nav';
 import { GoerliNetwork } from 'networks/goerli';
 import { MumbaiNetwork } from 'networks/mumbai';
+import { useConfig } from 'providers/configProvider';
+import { useNetwork } from 'providers/networkProvider';
+import WarningProvider from 'providers/warning-provider';
 
 import s from './s.module.scss';
 

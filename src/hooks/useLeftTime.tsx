@@ -1,7 +1,7 @@
 import React from 'react';
 import useInterval from '@rooks/use-interval';
 
-import { useGeneral } from 'components/providers/generalProvider';
+import { useGeneral } from 'providers/generalProvider';
 
 export type UseLeftTimeOptions = {
   end: number | Date;

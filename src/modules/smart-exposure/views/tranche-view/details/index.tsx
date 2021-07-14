@@ -9,9 +9,9 @@ import Icon from 'components/custom/icon';
 import { Tabs } from 'components/custom/tabs';
 import { InfoTooltip } from 'components/custom/tooltip';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useContract } from 'hooks/useContract';
 import { TrancheApiType } from 'modules/smart-exposure/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { calculateRebalancingCondition } from 'modules/smart-exposure/utils';

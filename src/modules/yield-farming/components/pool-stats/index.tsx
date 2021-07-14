@@ -5,10 +5,10 @@ import { formatToken, formatUSD } from 'web3/utils';
 
 import ExternalLink from 'components/custom/externalLink';
 import { Hint, Text } from 'components/custom/typography';
-import { useConfig } from 'components/providers/configProvider';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { UseLeftTime } from 'hooks/useLeftTime';
 import { useRewardPools } from 'modules/smart-yield/providers/reward-pools-provider';
+import { useConfig } from 'providers/configProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { useYFPools } from '../../providers/pools-provider';
 

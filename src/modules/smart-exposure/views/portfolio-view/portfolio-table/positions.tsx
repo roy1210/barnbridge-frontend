@@ -4,9 +4,9 @@ import { formatToken, formatUSD } from 'web3/utils';
 
 import IconsPair from 'components/custom/icons-pair';
 import { ColumnType, Table } from 'components/custom/table';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useContract } from 'hooks/useContract';
 import { TranchesItemApiType, useSeAPI } from 'modules/smart-exposure/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 const columns: ColumnType<TranchesItemApiType>[] = [
   {

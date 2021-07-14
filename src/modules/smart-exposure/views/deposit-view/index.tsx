@@ -13,10 +13,10 @@ import { TokenAmount, TokenAmountPreview, TokenSelect } from 'components/custom/
 import { InfoTooltip } from 'components/custom/tooltip';
 import TransactionDetails from 'components/custom/transaction-details';
 import { Text } from 'components/custom/typography';
-import { KnownTokens, useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useContract } from 'hooks/useContract';
 import { TrancheApiType, useSeAPI } from 'modules/smart-exposure/api';
 import { useEPoolContract, useSEPools } from 'modules/smart-exposure/providers/se-pools-provider';
+import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
 
 const tabs = [
   {

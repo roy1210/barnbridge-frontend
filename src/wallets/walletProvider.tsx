@@ -9,7 +9,7 @@ import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 import EventEmitter from 'wolfy87-eventemitter';
 
-import { useNetwork } from 'components/providers/networkProvider';
+import { useNetwork } from 'providers/networkProvider';
 import ConnectWalletModal from 'wallets/components/connect-wallet-modal';
 import InstallMetaMaskModal from 'wallets/components/install-metamask-modal';
 import UnsupportedChainModal from 'wallets/components/unsupported-chain-modal';

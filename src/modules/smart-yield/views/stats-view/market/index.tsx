@@ -9,8 +9,8 @@ import Tooltip from 'components/antd/tooltip';
 import { AprLabel } from 'components/custom/label';
 import { Tabs } from 'components/custom/tabs';
 import { Hint, Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useSYPool } from 'modules/smart-yield/providers/pool-provider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';
 

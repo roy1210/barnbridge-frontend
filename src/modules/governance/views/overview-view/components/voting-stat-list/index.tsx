@@ -6,10 +6,10 @@ import { formatToken, formatUSD } from 'web3/utils';
 import ExternalLink from 'components/custom/externalLink';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { UseLeftTime } from 'hooks/useLeftTime';
 import { APIOverviewData, useDaoAPI } from 'modules/governance/api';
 import { useDAO } from 'modules/governance/components/dao-provider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';
 

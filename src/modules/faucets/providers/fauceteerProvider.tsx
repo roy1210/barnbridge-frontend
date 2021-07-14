@@ -1,11 +1,11 @@
 import { FC, createContext, useContext, useEffect, useMemo } from 'react';
 import BigNumber from 'bignumber.js';
-import { useContractManager, useErc20Contract } from 'web3/components/contractManagerProvider';
 import Erc20Contract from 'web3/erc20Contract';
 import Web3Contract, { createAbiItem } from 'web3/web3Contract';
 
-import { useConfig } from 'components/providers/configProvider';
-import { KnownTokens, useKnownTokens } from 'components/providers/knownTokensProvider';
+import { useConfig } from 'providers/configProvider';
+import { useContractManager, useErc20Contract } from 'providers/contractManagerProvider';
+import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';

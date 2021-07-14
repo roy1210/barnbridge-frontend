@@ -8,9 +8,9 @@ import Icon from 'components/custom/icon';
 import StatusTag from 'components/custom/status-tag';
 import { Tabs as ElasticTabs } from 'components/custom/tabs';
 import { Hint, Text } from 'components/custom/typography';
-import { TokenMeta, useKnownTokens } from 'components/providers/knownTokensProvider';
 import { FCx } from 'components/types.tx';
 import { useRewardPools } from 'modules/smart-yield/providers/reward-pools-provider';
+import { TokenMeta, useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import s from './s.module.scss';

@@ -2,7 +2,6 @@ import React from 'react';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
 import format from 'date-fns/format';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 import Erc20Contract from 'web3/erc20Contract';
 import { formatToken, formatUSD, shortenAddr } from 'web3/utils';
 import Web3Contract from 'web3/web3Contract';
@@ -14,11 +13,12 @@ import ExternalLink from 'components/custom/externalLink';
 import Icon, { IconNames, TokenIconNames } from 'components/custom/icon';
 import TableFilter, { TableFilterType } from 'components/custom/table-filter';
 import { Text } from 'components/custom/typography';
-import { useConfig } from 'components/providers/configProvider';
-import { KnownTokens, useKnownTokens } from 'components/providers/knownTokensProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { useReload } from 'hooks/useReload';
 import { APITreasuryHistory, APITreasuryToken, useDaoAPI } from 'modules/governance/api';
+import { useConfig } from 'providers/configProvider';
+import { useContractManager } from 'providers/contractManagerProvider';
+import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
+import { useWeb3 } from 'providers/web3Provider';
 
 type APITreasuryTokenEntity = APITreasuryToken & {
   token: Erc20Contract;

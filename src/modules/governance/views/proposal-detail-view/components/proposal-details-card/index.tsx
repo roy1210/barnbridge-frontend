@@ -8,8 +8,8 @@ import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import Identicon from 'components/custom/identicon';
 import { Hint, Text } from 'components/custom/typography';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { APIProposalState } from 'modules/governance/api';
+import { useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 import ProposalActionCard from '../../../../components/proposal-action-card';

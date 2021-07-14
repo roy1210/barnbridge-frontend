@@ -7,16 +7,16 @@ import { FC } from 'react';
 import { render } from 'react-dom';
 import { createProviderTreeFromList } from 'react-provider-tree';
 import { BrowserRouter as Router } from 'react-router-dom';
-import ContractManagerProvider from 'web3/components/contractManagerProvider';
 
 import ErrorBoundary from 'components/custom/error-boundary';
-import ConfigProvider from 'components/providers/configProvider';
-import GeneralProvider from 'components/providers/generalProvider';
-import KnownTokensProvider from 'components/providers/knownTokensProvider';
-import NetworkProvider from 'components/providers/networkProvider';
-import NotificationsProvider from 'components/providers/notificationsProvider';
-import Web3Provider from 'components/providers/web3Provider';
 import LayoutView from 'layout';
+import ConfigProvider from 'providers/configProvider';
+import ContractManagerProvider from 'providers/contractManagerProvider';
+import GeneralProvider from 'providers/generalProvider';
+import KnownTokensProvider from 'providers/knownTokensProvider';
+import NetworkProvider from 'providers/networkProvider';
+import NotificationsProvider from 'providers/notificationsProvider';
+import Web3Provider from 'providers/web3Provider';
 import { ReactComponent as StaticSprite } from 'resources/svg/static-sprite.svg';
 import WalletProvider from 'wallets/walletProvider';
 

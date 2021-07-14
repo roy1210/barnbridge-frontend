@@ -5,8 +5,8 @@ import EventEmitter from 'wolfy87-eventemitter';
 import Icon, { IconNames } from 'components/custom/icon';
 import { Modal } from 'components/custom/modal';
 import { Text } from 'components/custom/typography';
-import { useGeneral } from 'components/providers/generalProvider';
-import { useNetwork } from 'components/providers/networkProvider';
+import { useGeneral } from 'providers/generalProvider';
+import { useNetwork } from 'providers/networkProvider';
 import { MetamaskConnector } from 'wallets/connectors/metamask';
 import { useWallet } from 'wallets/walletProvider';
 

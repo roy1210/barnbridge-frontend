@@ -8,8 +8,8 @@ import cn from 'classnames';
 import Tooltip from 'components/antd/tooltip';
 import Icon, { IconNames } from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
-import { useConfig } from 'components/providers/configProvider';
-import { useGeneral } from 'components/providers/generalProvider';
+import { useConfig } from 'providers/configProvider';
+import { useGeneral } from 'providers/generalProvider';
 
 import s from './s.module.scss';
 

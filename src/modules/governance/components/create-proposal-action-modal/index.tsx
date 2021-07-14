@@ -14,10 +14,10 @@ import Textarea from 'components/antd/textarea';
 import YesNoSelector from 'components/antd/yes-no-selector';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
-import { useConfig } from 'components/providers/configProvider';
-import { useNetwork } from 'components/providers/networkProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import useMergeState from 'hooks/useMergeState';
+import { useConfig } from 'providers/configProvider';
+import { useNetwork } from 'providers/networkProvider';
+import { useWeb3 } from 'providers/web3Provider';
 
 import AddZerosPopup from '../add-zeros-popup';
 import SimulatedProposalActionModal from '../simulated-proposal-action-modal';

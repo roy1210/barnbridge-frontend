@@ -5,8 +5,8 @@ import AntdSpin from 'antd/lib/spin';
 import RadioButton from 'components/antd/radio-button';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
-import { useNetwork } from 'components/providers/networkProvider';
 import useMergeState from 'hooks/useMergeState';
+import { useNetwork } from 'providers/networkProvider';
 
 import s from './s.module.scss';
 

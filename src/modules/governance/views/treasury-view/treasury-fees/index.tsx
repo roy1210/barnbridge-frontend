@@ -2,7 +2,6 @@ import React from 'react';
 import AntdSpin from 'antd/lib/spin';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 import TxConfirmModal from 'web3/components/tx-confirm-modal';
 import { formatToken, formatUSD } from 'web3/utils';
 import Web3Contract from 'web3/web3Contract';
@@ -16,11 +15,12 @@ import Icon from 'components/custom/icon';
 import IconBubble from 'components/custom/icon-bubble';
 import TableFilter, { TableFilterType } from 'components/custom/table-filter';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
-import { useWeb3 } from 'components/providers/web3Provider';
 import { useReload } from 'hooks/useReload';
 import { APISYPool, Markets, Pools, useSyAPI } from 'modules/smart-yield/api';
 import SYProviderContract from 'modules/smart-yield/contracts/syProviderContract';
+import { useContractManager } from 'providers/contractManagerProvider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
+import { useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 type SYPoolEntity = APISYPool & {

@@ -9,8 +9,8 @@ import Grid from 'components/custom/grid';
 import Icon, { IconNames } from 'components/custom/icon';
 import IconsSet from 'components/custom/icons-set';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { YFPoolID, useYFPools } from 'modules/yield-farming/providers/pools-provider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 type PoolHarvestButtonProps = {
   icons: string[];

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
-import { useContractManager } from 'web3/components/contractManagerProvider';
 import Erc20Contract from 'web3/erc20Contract';
 import Web3Contract from 'web3/web3Contract';
 
+import { useContractManager } from 'providers/contractManagerProvider';
 // import { getTokenByAddress } from 'components/providers/known-tokens-provider';
 import { useWallet } from 'wallets/walletProvider';
 

@@ -12,9 +12,9 @@ import Select from 'components/antd/select';
 import Icon from 'components/custom/icon';
 import IconsSet from 'components/custom/icons-set';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useReload } from 'hooks/useReload';
 import { useYfAPI } from 'modules/yield-farming/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 import { ReactComponent as EmptyChartSvg } from 'resources/svg/empty-chart.svg';
 
 import { YFPoolID, useYFPools } from '../../providers/pools-provider';

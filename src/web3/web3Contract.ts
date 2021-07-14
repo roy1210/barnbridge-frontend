@@ -8,7 +8,7 @@ import { AbiItem } from 'web3-utils';
 import { getGasValue } from 'web3/utils';
 import EventEmitter from 'wolfy87-eventemitter';
 
-import { WEB3_ERROR_VALUE } from 'components/providers/web3Provider';
+import { WEB3_ERROR_VALUE } from 'providers/web3Provider';
 
 export class AbiTuple {
   items: string[] = [];

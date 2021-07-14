@@ -3,7 +3,7 @@ import cn from 'classnames';
 
 import ExternalLink from 'components/custom/externalLink';
 import { Text } from 'components/custom/typography';
-import { useConfig } from 'components/providers/configProvider';
+import { useConfig } from 'providers/configProvider';
 
 import s from './s.module.scss';
 

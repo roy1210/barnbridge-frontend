@@ -4,8 +4,8 @@ import cn from 'classnames';
 import Icon, { IconNames } from 'components/custom/icon';
 import IconsPair from 'components/custom/icons-pair';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { PoolApiType, useSeAPI } from 'modules/smart-exposure/api';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { PortfolioTable } from './portfolio-table';
 import { PortfolioValue } from './portfolio-value';

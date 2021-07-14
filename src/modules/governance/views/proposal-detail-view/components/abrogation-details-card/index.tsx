@@ -6,7 +6,7 @@ import ExternalLink from 'components/custom/externalLink';
 import Grid from 'components/custom/grid';
 import Identicon from 'components/custom/identicon';
 import { Text } from 'components/custom/typography';
-import { useWeb3 } from 'components/providers/web3Provider';
+import { useWeb3 } from 'providers/web3Provider';
 
 import { useAbrogation } from '../../providers/AbrogationProvider';
 

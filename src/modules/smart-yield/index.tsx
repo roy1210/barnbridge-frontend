@@ -4,9 +4,9 @@ import AntdSpin from 'antd/lib/spin';
 
 import Icon from 'components/custom/icon';
 import { NavTabs } from 'components/custom/tabs';
-import { useConfig } from 'components/providers/configProvider';
 import SyAPIProvider from 'modules/smart-yield/api';
 import RewardPoolProvider from 'modules/smart-yield/providers/reward-pool-provider';
+import { useConfig } from 'providers/configProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import PoolProvider from './providers/pool-provider';

@@ -1,16 +1,16 @@
 import BigNumber from 'bignumber.js';
-import { ContractManagerType } from 'web3/components/contractManagerProvider';
 import Erc20Contract from 'web3/erc20Contract';
 import Web3Contract from 'web3/web3Contract';
 
-import { KnownTokens, KnownTokensContextType, TokenMeta } from 'components/providers/knownTokensProvider';
-import { MainnetHttpsWeb3Provider } from 'components/providers/web3Provider';
 import ManagedEntity from 'models/managedEntity';
 import { APISYRewardPool } from 'modules/smart-yield/api';
 import SYAaveTokenContract from 'modules/smart-yield/contracts/syAaveTokenContract';
 import SYRewardPoolContract from 'modules/smart-yield/contracts/syRewardPoolContract';
 import SYSmartYieldContract from 'modules/smart-yield/contracts/sySmartYieldContract';
 import { AaveMarket } from 'modules/smart-yield/providers/markets';
+import { ContractManagerType } from 'providers/contractManagerProvider';
+import { KnownTokens, KnownTokensContextType, TokenMeta } from 'providers/knownTokensProvider';
+import { MainnetHttpsWeb3Provider } from 'providers/web3Provider';
 
 export class SYRewardPoolEntity extends ManagedEntity {
   meta: APISYRewardPool;

@@ -5,8 +5,8 @@ import cn from 'classnames';
 import Spin from 'components/antd/spin';
 import Icon from 'components/custom/icon';
 import { Tabs } from 'components/custom/tabs';
-import { useConfig } from 'components/providers/configProvider';
 import { useSYPool } from 'modules/smart-yield/providers/pool-provider';
+import { useConfig } from 'providers/configProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import DepositHeader from '../deposit-view/deposit-header';

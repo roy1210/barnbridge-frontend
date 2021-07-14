@@ -24,8 +24,8 @@ import { formatBigValue, formatToken } from 'web3/utils';
 
 import ExternalLink from 'components/custom/externalLink';
 import { Hint, Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useDAO } from 'modules/governance/components/dao-provider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { inRange } from 'utils';
 

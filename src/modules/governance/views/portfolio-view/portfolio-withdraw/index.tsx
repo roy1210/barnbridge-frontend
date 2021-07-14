@@ -10,8 +10,8 @@ import Icon, { IconNames, TokenIconNames } from 'components/custom/icon';
 import { Spinner } from 'components/custom/spinner';
 import { TokenAmount } from 'components/custom/token-amount-new';
 import { Text } from 'components/custom/typography';
-import { useKnownTokens } from 'components/providers/knownTokensProvider';
 import { useDAO } from 'modules/governance/components/dao-provider';
+import { useKnownTokens } from 'providers/knownTokensProvider';
 
 type FormType = {
   amount: string;

@@ -1,6 +1,6 @@
 import { FC, createContext, useContext } from 'react';
 
-import { useNetwork } from 'components/providers/networkProvider';
+import { useNetwork } from 'providers/networkProvider';
 
 import { InvariantContext } from 'utils/context';
 
