@@ -93,7 +93,9 @@ const RewardPoolsProvider: FC = props => {
         });
 
         setPools(rewardPools);
-      } catch {}
+      } catch (e) {
+        console.error(e);
+      }
 
       setLoading(false);
     })();
