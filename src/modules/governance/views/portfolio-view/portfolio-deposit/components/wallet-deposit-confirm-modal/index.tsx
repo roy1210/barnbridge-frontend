@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import BigNumber from 'bignumber.js';
 import { formatToken } from 'web3/utils';
 
@@ -11,12 +11,12 @@ import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';
 
-export type WalletDepositConfirmModalProps = ModalProps & {
+type Props = ModalProps & {
   deposit?: BigNumber;
   lockDuration?: number;
 };
 
-const WalletDepositConfirmModal: React.FC<WalletDepositConfirmModalProps> = props => {
+const WalletDepositConfirmModal: FC<Props> = props => {
   const { deposit, lockDuration, ...modalProps } = props;
 
   const { projectToken } = useKnownTokens();

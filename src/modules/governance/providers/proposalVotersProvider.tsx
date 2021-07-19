@@ -1,9 +1,8 @@
-import React from 'react';
+import { FC, createContext, useContext } from 'react';
 
 import useMergeState from 'hooks/useMergeState';
 import { APIVoteEntity, useFetchProposalVoters } from 'modules/governance/api';
-
-import { useProposal } from '../ProposalProvider';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
 import { InvariantContext } from 'utils/context';
 
@@ -30,13 +29,13 @@ const InitialState: ProposalVotersProviderState = {
   supportFilter: undefined,
 };
 
-const Context = React.createContext<ProposalVotersContextType>(InvariantContext('ProposalVotersProvider'));
+const Context = createContext<ProposalVotersContextType>(InvariantContext('ProposalVotersProvider'));
 
 export function useProposalVoters(): ProposalVotersContextType {
-  return React.useContext(Context);
+  return useContext(Context);
 }
 
-const ProposalVotersProvider: React.FC = props => {
+const ProposalVotersProvider: FC = props => {
   const { children } = props;
 
   const { proposal } = useProposal();

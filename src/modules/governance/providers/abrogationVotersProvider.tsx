@@ -1,9 +1,8 @@
-import React from 'react';
+import { FC, createContext, useContext } from 'react';
 
 import useMergeState from 'hooks/useMergeState';
 import { APIVoteEntity, useFetchAbrogationVoters } from 'modules/governance/api';
-
-import { useAbrogation } from '../AbrogationProvider';
+import { useAbrogation } from 'modules/governance/providers/abrogationProvider';
 
 import { InvariantContext } from 'utils/context';
 
@@ -30,13 +29,13 @@ const InitialState: AbrogationVotersProviderState = {
   supportFilter: undefined,
 };
 
-const Context = React.createContext<AbrogationVotersContextType>(InvariantContext('AbrogationVotersProvider'));
+const Context = createContext<AbrogationVotersContextType>(InvariantContext('AbrogationVotersProvider'));
 
 export function useAbrogationVoters(): AbrogationVotersContextType {
-  return React.useContext(Context);
+  return useContext(Context);
 }
 
-const AbrogationVotersProvider: React.FC = props => {
+const AbrogationVotersProvider: FC = props => {
   const { children } = props;
 
   const { abrogation } = useAbrogation();

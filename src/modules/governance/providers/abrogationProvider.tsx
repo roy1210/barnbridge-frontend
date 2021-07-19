@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import { FC, createContext, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import * as Antd from 'antd';
 import BigNumber from 'bignumber.js';
 
 import useMergeState from 'hooks/useMergeState';
@@ -8,9 +7,8 @@ import { useReload } from 'hooks/useReload';
 import { APIAbrogationEntity, useFetchAbrogation } from 'modules/governance/api';
 import { AbrogationProposalReceipt } from 'modules/governance/contracts/daoGovernance';
 import { useDAO } from 'modules/governance/providers/daoProvider';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 import { useWallet } from 'wallets/walletProvider';
-
-import { useProposal } from '../ProposalProvider';
 
 import { InvariantContext } from 'utils/context';
 
@@ -34,13 +32,13 @@ export type AbrogationContextType = AbrogationProviderState & {
   abrogationProposalCancelVote(gasPrice: number): Promise<void>;
 };
 
-const Context = React.createContext<AbrogationContextType>(InvariantContext('AbrogationProvider'));
+const Context = createContext<AbrogationContextType>(InvariantContext('AbrogationProvider'));
 
 export function useAbrogation(): AbrogationContextType {
-  return React.useContext(Context);
+  return useContext(Context);
 }
 
-const AbrogationProvider: React.FC = props => {
+const AbrogationProvider: FC = props => {
   const { children } = props;
 
   const history = useHistory();
@@ -67,7 +65,7 @@ const AbrogationProvider: React.FC = props => {
     // history.push(`/governance/proposals/${proposal.proposalId}`);
   }, [error]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState({
       forRate: undefined,
       againstRate: undefined,
@@ -107,7 +105,7 @@ const AbrogationProvider: React.FC = props => {
     });
   }, [state.abrogation]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState({
       approvalRate: undefined,
     });

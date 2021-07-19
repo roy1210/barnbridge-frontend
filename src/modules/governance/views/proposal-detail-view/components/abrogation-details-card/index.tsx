@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { shortenAddr } from 'web3/utils';
 
 import Divider from 'components/antd/divider';
@@ -6,11 +6,10 @@ import ExternalLink from 'components/custom/externalLink';
 import Grid from 'components/custom/grid';
 import Identicon from 'components/custom/identicon';
 import { Text } from 'components/custom/typography';
+import { useAbrogation } from 'modules/governance/providers/abrogationProvider';
 import { useWeb3 } from 'providers/web3Provider';
 
-import { useAbrogation } from '../../providers/AbrogationProvider';
-
-const AbrogationDetailsCard: React.FC = () => {
+const AbrogationDetailsCard: FC = () => {
   const { getEtherscanAddressUrl } = useWeb3();
   const abrogationCtx = useAbrogation();
 

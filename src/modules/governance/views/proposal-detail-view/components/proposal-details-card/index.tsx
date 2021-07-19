@@ -1,4 +1,4 @@
-import React from 'react';
+import { CSSProperties, FC, useState } from 'react';
 import { shortenAddr } from 'web3/utils';
 
 import Button from 'components/antd/button';
@@ -9,11 +9,11 @@ import Icon from 'components/custom/icon';
 import Identicon from 'components/custom/identicon';
 import { Hint, Text } from 'components/custom/typography';
 import { APIProposalState } from 'modules/governance/api';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 import { useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
 import ProposalActionCard from '../../../../components/proposal-action-card';
-import { useProposal } from '../../providers/ProposalProvider';
 
 type ProposalDetailsCardState = {
   cancelling: boolean;
@@ -23,13 +23,13 @@ const InitialState: ProposalDetailsCardState = {
   cancelling: false,
 };
 
-const ProposalDetailsCard: React.FC = () => {
+const ProposalDetailsCard: FC = () => {
   const wallet = useWallet();
   const { getEtherscanAddressUrl } = useWeb3();
   const proposalCtx = useProposal();
   const { proposal, thresholdRate, minThreshold } = proposalCtx;
 
-  const [state, setState] = React.useState<ProposalDetailsCardState>(InitialState);
+  const [state, setState] = useState<ProposalDetailsCardState>(InitialState);
 
   const ownProposal = proposal?.proposer === wallet.account;
   const isThresholdBelow = thresholdRate !== undefined && thresholdRate < minThreshold;
@@ -65,7 +65,7 @@ const ProposalDetailsCard: React.FC = () => {
           Details
         </Text>
       </div>
-      <div className="card-row flexbox-list p-24" style={{ '--gap': '32px' } as React.CSSProperties}>
+      <div className="card-row flexbox-list p-24" style={{ '--gap': '32px' } as CSSProperties}>
         <div>
           <Text type="small" weight="semibold" color="secondary" className="mb-4">
             Created by

@@ -1,4 +1,4 @@
-import React, { FC, Suspense, lazy, useEffect, useState } from 'react';
+import { FC, Suspense, lazy, useEffect, useState } from 'react';
 import { Redirect, Route, Switch, useHistory, useRouteMatch } from 'react-router-dom';
 
 import Tabs from 'components/antd/tabs';

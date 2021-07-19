@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import BigNumber from 'bignumber.js';
 import { formatToken } from 'web3/utils';
 
@@ -10,12 +10,12 @@ import { Text } from 'components/custom/typography';
 
 import { getFormattedDuration } from 'utils';
 
-export type WalletLockConfirmModalProps = ModalProps & {
+type Props = ModalProps & {
   balance?: BigNumber;
   duration?: number;
 };
 
-const WalletLockConfirmModal: React.FC<WalletLockConfirmModalProps> = props => {
+const WalletLockConfirmModal: FC<Props> = props => {
   const { balance, duration, ...modalProps } = props;
 
   return (

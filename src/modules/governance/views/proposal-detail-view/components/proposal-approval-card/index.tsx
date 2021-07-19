@@ -1,12 +1,11 @@
-import React from 'react';
+import { FC } from 'react';
 
 import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
-import { useProposal } from '../../providers/ProposalProvider';
-
-const ProposalApprovalCard: React.FC = () => {
+const ProposalApprovalCard: FC = () => {
   const proposalCtx = useProposal();
 
   const passed = (proposalCtx.forRate ?? 0) >= (proposalCtx.proposal?.acceptanceThreshold ?? 0);

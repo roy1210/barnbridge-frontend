@@ -1,12 +1,11 @@
-import React from 'react';
+import { FC } from 'react';
 
 import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
+import { useAbrogation } from 'modules/governance/providers/abrogationProvider';
 
-import { useAbrogation } from '../../providers/AbrogationProvider';
-
-const AbrogationApprovalCard: React.FC = () => {
+const AbrogationApprovalCard: FC = () => {
   const abrogationCtx = useAbrogation();
 
   const passed = (abrogationCtx.approvalRate ?? 0) >= (abrogationCtx.acceptanceThreshold ?? 0);

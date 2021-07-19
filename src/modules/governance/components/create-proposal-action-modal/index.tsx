@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useEffect } from 'react';
 import AntdForm, { FormInstance } from 'antd/lib/form';
 import AntdNotification from 'antd/lib/notification';
 import AntdSpin from 'antd/lib/spin';
@@ -56,13 +56,6 @@ const InitialFormValues: CreateProposalActionForm = {
   functionEncodedParams: '',
 };
 
-export type CreateProposalActionModalProps = ModalProps & {
-  edit?: boolean;
-  actions: CreateProposalActionForm[];
-  initialValues?: CreateProposalActionForm;
-  onSubmit: (values: CreateProposalActionForm) => void;
-};
-
 type CreateProposalActionModalState = {
   showSimulatedActionModal: boolean;
   simulatedAction?: CreateProposalActionForm;
@@ -81,7 +74,14 @@ const InitialState: CreateProposalActionModalState = {
   submitting: false,
 };
 
-const CreateProposalActionModal: React.FC<CreateProposalActionModalProps> = props => {
+type Props = ModalProps & {
+  edit?: boolean;
+  actions: CreateProposalActionForm[];
+  initialValues?: CreateProposalActionForm;
+  onSubmit: (values: CreateProposalActionForm) => void;
+};
+
+const CreateProposalActionModal: FC<Props> = props => {
   const { edit = false, initialValues = InitialFormValues } = props;
 
   const { activeNetwork } = useNetwork();
@@ -304,7 +304,7 @@ const CreateProposalActionModal: React.FC<CreateProposalActionModalProps> = prop
     });
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialValues !== InitialFormValues) {
       form.resetFields();
       form.setFieldsValue(initialValues);

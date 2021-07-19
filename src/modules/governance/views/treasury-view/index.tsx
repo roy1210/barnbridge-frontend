@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom';
 
 import { Tabs } from 'components/custom/tabs';
@@ -7,24 +7,24 @@ import SyAPIProvider from 'modules/smart-yield/api';
 import TreasuryFees from './treasury-fees';
 import TreasuryHoldings from './treasury-holdings';
 
-type TreasuryViewRouteParams = {
+type RouteParams = {
   tab: string;
 };
 
-const TreasuryView: React.FC = () => {
+const TreasuryView: FC = () => {
   const {
     params: { tab = 'holdings' },
-  } = useRouteMatch<TreasuryViewRouteParams>();
+  } = useRouteMatch<RouteParams>();
   const history = useHistory();
 
-  const [activeTab, setActiveTab] = React.useState<string>(tab);
+  const [activeTab, setActiveTab] = useState<string>(tab);
 
   function handleTabChange(tabKey: string) {
     setActiveTab(tabKey);
     history.push(`/governance/treasury/${tabKey}`);
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (tab !== activeTab) {
       setActiveTab(tab);
     }

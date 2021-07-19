@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import { CSSProperties, FC, useEffect, useState } from 'react';
 import classnames from 'classnames';
 import addDays from 'date-fns/addDays';
 import addMinutes from 'date-fns/addMinutes';
@@ -189,7 +189,7 @@ const PortfolioLock: FC = () => {
             {({ field: { ref, ...field } }) => (
               <div className="flex flow-row row-gap-16">
                 <DatePicker showTime showNow={false} format="DD/MM/YYYY HH:mm" size="large" {...field} />
-                <div className="flexbox-grid" style={{ '--gap': '8px' } as React.CSSProperties}>
+                <div className="flexbox-grid" style={{ '--gap': '8px' } as CSSProperties}>
                   {DURATION_OPTIONS.map(item => (
                     <button
                       key={item}

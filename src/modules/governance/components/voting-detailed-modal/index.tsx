@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import cn from 'classnames';
 import { formatToken } from 'web3/utils';
@@ -13,8 +13,6 @@ import { isValidAddress } from 'utils';
 
 import s from './s.module.scss';
 
-export type VotingDetailedModalProps = ModalProps;
-
 type VotingDetailedModalState = {
   leftBonus?: BigNumber;
   leftTotalVotingPower?: BigNumber;
@@ -25,14 +23,14 @@ const InitialState: VotingDetailedModalState = {
   leftTotalVotingPower: undefined,
 };
 
-const VotingDetailedModal: React.FC<VotingDetailedModalProps> = props => {
+const VotingDetailedModal: FC<ModalProps> = props => {
   const daoCtx = useDAO();
   const { votingPower, userDelegatedTo, delegatedPower, userLockedUntil, balance: myBondBalance } = daoCtx.daoBarn!;
 
   const [state, setState] = useMergeState<VotingDetailedModalState>(InitialState);
 
   const isDelegated = isValidAddress(userDelegatedTo);
-  const loadedUserLockedUntil = React.useMemo(() => (userLockedUntil ?? Date.now()) - Date.now(), [userLockedUntil]);
+  const loadedUserLockedUntil = useMemo(() => (userLockedUntil ?? Date.now()) - Date.now(), [userLockedUntil]);
 
   useLeftTime({
     end: !isDelegated ? userLockedUntil ?? 0 : 0,
@@ -54,7 +52,7 @@ const VotingDetailedModal: React.FC<VotingDetailedModalProps> = props => {
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState({
       leftBonus: isDelegated
         ? BigNumber.ZERO

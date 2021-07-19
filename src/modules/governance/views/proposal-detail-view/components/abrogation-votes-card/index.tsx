@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { formatBigValue } from 'web3/utils';
 
 import Alert from 'components/antd/alert';
@@ -7,8 +7,8 @@ import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
+import { useAbrogation } from 'modules/governance/providers/abrogationProvider';
 
-import { useAbrogation } from '../../providers/AbrogationProvider';
 import AbrogationVoteModal, { VoteAbrogationState } from '../abrogation-vote-modal';
 import AbrogationVotersModal from '../abrogation-voters-modal';
 
@@ -24,7 +24,7 @@ const InitialState: AbrogationVotesCardState = {
   voteState: VoteAbrogationState.None,
 };
 
-const AbrogationVotesCard: React.FC = () => {
+const AbrogationVotesCard: FC = () => {
   const abrogationCtx = useAbrogation();
 
   const [state, setState] = useMergeState<AbrogationVotesCardState>(InitialState);

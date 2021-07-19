@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import Button from 'components/antd/button';
@@ -7,6 +7,7 @@ import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
 import { APIProposalState } from 'modules/governance/api';
+import ProposalProvider, { useProposal } from 'modules/governance/providers/proposalProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import ProposalAbrogationCard from './components/proposal-abrogation-card';
@@ -17,7 +18,6 @@ import ProposalStatusCard from './components/proposal-status-card';
 import ProposalVoteResultsCard from './components/proposal-vote-results-card';
 import ProposalVotesCard from './components/proposal-votes-card';
 import QueueForExecutionModal from './components/queue-for-execution-modal';
-import ProposalProvider, { useProposal } from './providers/ProposalProvider';
 
 import s from './s.module.scss';
 
@@ -31,7 +31,7 @@ const InitialState: ProposalDetailViewInnerState = {
   executing: false,
 };
 
-const ProposalDetailViewInner: React.FC = () => {
+const ProposalDetailViewInner: FC = () => {
   const history = useHistory();
   const wallet = useWallet();
   const proposalCtx = useProposal();
@@ -122,7 +122,7 @@ const ProposalDetailViewInner: React.FC = () => {
   );
 };
 
-const ProposalDetailView: React.FC = () => {
+const ProposalDetailView: FC = () => {
   const { params } = useRouteMatch<{ id: string }>();
 
   return (

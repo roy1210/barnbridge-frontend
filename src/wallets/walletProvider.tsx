@@ -1,4 +1,4 @@
-import React, { FC, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useSessionStorage } from 'react-use-storage';
 import SafeProvider, { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk';
 import { AbstractConnector } from '@web3-react/abstract-connector';

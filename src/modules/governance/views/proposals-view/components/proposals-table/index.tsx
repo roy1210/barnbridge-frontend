@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { Link } from 'react-router-dom';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
@@ -8,8 +8,8 @@ import Table from 'components/antd/table';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
 import { UseLeftTime } from 'hooks/useLeftTime';
+import { LiteProposalEntity, useProposals } from 'modules/governance/providers/proposalsProvider';
 
-import { LiteProposalEntity, useProposals } from '../../providers/ProposalsProvider';
 import ProposalStatusTag from '../proposal-status-tag';
 
 import { getFormattedDuration } from 'utils';
@@ -80,7 +80,7 @@ const Columns: ColumnsType<LiteProposalEntity> = [
   },
 ];
 
-const ProposalsTable: React.FC = () => {
+const ProposalsTable: FC = () => {
   const proposalsCtx = useProposals();
 
   function handlePaginationChange(page: number) {

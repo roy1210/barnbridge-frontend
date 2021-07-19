@@ -1,23 +1,23 @@
-import React from 'react';
+import { FC } from 'react';
 
 import Modal, { ModalProps } from 'components/antd/modal';
 import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 import { APIProposalState } from 'modules/governance/api';
+import AbrogationProvider from 'modules/governance/providers/abrogationProvider';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
-import AbrogationProvider from '../../providers/AbrogationProvider';
-import { useProposal } from '../../providers/ProposalProvider';
 import AbrogationApprovalCard from '../abrogation-approval-card';
 import AbrogationDetailsCard from '../abrogation-details-card';
 import AbrogationVoteResultsCard from '../abrogation-vote-results-card';
 import AbrogationVotesCard from '../abrogation-votes-card';
 
+import { injectProvider } from 'utils/component';
+
 import s from './s.module.scss';
 
-export type AbrogationProposalModalProps = ModalProps;
-
-const AbrogationProposalModalInner: React.FC<AbrogationProposalModalProps> = props => {
+const AbrogationProposalModal: FC<ModalProps> = injectProvider(props => {
   const proposalCtx = useProposal();
 
   return (
@@ -55,14 +55,6 @@ const AbrogationProposalModalInner: React.FC<AbrogationProposalModalProps> = pro
       </Grid>
     </Modal>
   );
-};
-
-const AbrogationProposalModal: React.FC<AbrogationProposalModalProps> = props => {
-  return (
-    <AbrogationProvider>
-      <AbrogationProposalModalInner {...props} />
-    </AbrogationProvider>
-  );
-};
+}, AbrogationProvider);
 
 export default AbrogationProposalModal;

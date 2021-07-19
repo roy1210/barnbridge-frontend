@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useEffect } from 'react';
 import { Redirect, useHistory } from 'react-router-dom';
 import AntdForm from 'antd/lib/form';
 import { waitUntil } from 'async-wait-until';
@@ -14,7 +14,7 @@ import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 import { executeFetch } from 'hooks/useFetch';
 import useMergeState from 'hooks/useMergeState';
-import { APIProposalEntity, useFetchProposal } from 'modules/governance/api';
+import { APIProposalEntity } from 'modules/governance/api';
 import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useConfig } from 'providers/configProvider';
 import { useWallet } from 'wallets/walletProvider';
@@ -47,7 +47,7 @@ const InitialState: ProposalCreateViewState = {
   submitting: false,
 };
 
-const ProposalCreateView: React.FC = () => {
+const ProposalCreateView: FC = () => {
   const config = useConfig();
   const history = useHistory();
   const daoCtx = useDAO();
@@ -157,7 +157,7 @@ const ProposalCreateView: React.FC = () => {
     setState({ submitting: false });
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     daoCtx.actions.hasActiveProposal().then(hasActiveProposal => {
       setState({ hasActiveProposal });
     });

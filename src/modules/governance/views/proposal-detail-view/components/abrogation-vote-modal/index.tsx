@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useEffect } from 'react';
 import AntdForm from 'antd/lib/form';
 import AntdRadio from 'antd/lib/radio';
 import { formatBigValue } from 'web3/utils';
@@ -13,9 +13,8 @@ import GasFeeList from 'components/custom/gas-fee-list';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
-
-import { useAbrogation } from '../../providers/AbrogationProvider';
-import { useProposal } from '../../providers/ProposalProvider';
+import { useAbrogation } from 'modules/governance/providers/abrogationProvider';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
 import s from './s.module.scss';
 
@@ -54,7 +53,7 @@ const InitialState: AbrogationVoteModalState = {
   submitting: false,
 };
 
-const AbrogationVoteModal: React.FC<AbrogationVoteModalProps> = props => {
+const AbrogationVoteModal: FC<AbrogationVoteModalProps> = props => {
   const { voteState, ...modalProps } = props;
 
   const proposalCtx = useProposal();
@@ -97,7 +96,7 @@ const AbrogationVoteModal: React.FC<AbrogationVoteModalProps> = props => {
     setState({ submitting: false });
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (voteState === VoteAbrogationState.VoteChange) {
       form.setFieldsValue({
         changeOption: abrogationCtx.receipt?.support,

@@ -1,11 +1,12 @@
-import React from 'react';
+import { FC } from 'react';
 
 import { useDAO } from 'modules/governance/providers/daoProvider';
-import ActivationThreshold from './components/activation-threshold';
-import VotersTable from './components/voters-table';
-import VotingStatList from './components/voting-stat-list';
 
-const OverviewView: React.FC = () => {
+import ActivationThreshold from './activation-threshold';
+import VotersTable from './voters-table';
+import VotingStatList from './voting-stat-list';
+
+const OverviewView: FC = () => {
   const daoCtx = useDAO();
 
   return (

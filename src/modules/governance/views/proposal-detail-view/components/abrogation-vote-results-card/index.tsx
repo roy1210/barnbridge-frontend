@@ -1,16 +1,16 @@
-import React from 'react';
+import { FC, useState } from 'react';
 
 import Button from 'components/antd/button';
 import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
+import { useAbrogation } from 'modules/governance/providers/abrogationProvider';
 
-import { useAbrogation } from '../../providers/AbrogationProvider';
 import AbrogationVotersModal from '../abrogation-voters-modal';
 
-const AbrogationVoteResultsCard: React.FC = () => {
+const AbrogationVoteResultsCard: FC = () => {
   const abrogationCtx = useAbrogation();
-  const [votersModal, showVotersModal] = React.useState<boolean>(false);
+  const [votersModal, showVotersModal] = useState<boolean>(false);
 
   return (
     <>

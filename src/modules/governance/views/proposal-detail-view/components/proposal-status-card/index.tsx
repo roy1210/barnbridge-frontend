@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, ReactNode } from 'react';
 import format from 'date-fns/format';
 import formatDistance from 'date-fns/formatDistance';
 
@@ -8,11 +8,10 @@ import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 import { UseLeftTime } from 'hooks/useLeftTime';
 import { APIProposalState, APIProposalStateMap } from 'modules/governance/api';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 import { useWeb3 } from 'providers/web3Provider';
 
-import { useProposal } from '../../providers/ProposalProvider';
-
-function getEventIcon(index: number, name: string): React.ReactNode {
+function getEventIcon(index: number, name: string): ReactNode {
   if (
     [APIProposalState.EXPIRED, APIProposalState.FAILED, APIProposalState.CANCELED, APIProposalState.ABROGATED].includes(
       name as any,
@@ -74,7 +73,7 @@ function formatEventTime(name: string, start: number, end: number): string {
   return `Started ${dist}`;
 }
 
-const ProposalStatusCard: React.FC = () => {
+const ProposalStatusCard: FC = () => {
   const { getEtherscanTxUrl } = useWeb3();
   const { proposal, reload } = useProposal();
 

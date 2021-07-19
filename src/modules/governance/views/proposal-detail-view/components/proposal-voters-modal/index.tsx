@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
 import { formatBigValue, shortenAddr } from 'web3/utils';
@@ -11,9 +11,10 @@ import Grid from 'components/custom/grid';
 import Identicon from 'components/custom/identicon';
 import { Text } from 'components/custom/typography';
 import { APIVoteEntity } from 'modules/governance/api';
+import ProposalVotersProvider, { useProposalVoters } from 'modules/governance/providers/proposalVotersProvider';
 import { useWeb3 } from 'providers/web3Provider';
 
-import ProposalVotersProvider, { useProposalVoters } from '../../providers/ProposalVotersProvider';
+import { injectProvider } from 'utils/component';
 
 import s from './s.module.scss';
 
@@ -65,9 +66,7 @@ const Columns: ColumnsType<APIVoteEntity> = [
   },
 ];
 
-export type ProposalVotersModalProps = ModalProps;
-
-const ProposalVotersModalInner: React.FC<ProposalVotersModalProps> = props => {
+const ProposalVotersModal: FC<ModalProps> = injectProvider(props => {
   const { ...modalProps } = props;
 
   const proposalVotesCtx = useProposalVoters();
@@ -117,11 +116,6 @@ const ProposalVotersModalInner: React.FC<ProposalVotersModalProps> = props => {
       />
     </Modal>
   );
-};
+}, ProposalVotersProvider);
 
-const ProposalVotersModal: React.FC<ProposalVotersModalProps> = props => (
-  <ProposalVotersProvider>
-    <ProposalVotersModalInner {...props} />
-  </ProposalVotersProvider>
-);
 export default ProposalVotersModal;

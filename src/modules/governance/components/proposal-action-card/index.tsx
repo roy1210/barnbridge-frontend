@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, ReactNode, useMemo, useState } from 'react';
 import AntdTypography from 'antd/lib/typography';
 import cn from 'classnames';
 import { AbiDecodeResult, AbiFunctionFragment, AbiInterface } from 'web3/abiInterface';
@@ -15,8 +15,8 @@ import { useWeb3 } from 'providers/web3Provider';
 
 import s from './s.module.scss';
 
-export type ProposalActionCardProps = ExpandableCardProps & {
-  title: React.ReactNode;
+type Props = ExpandableCardProps & {
+  title: ReactNode;
   target: string;
   signature: string;
   callData: string;
@@ -25,7 +25,7 @@ export type ProposalActionCardProps = ExpandableCardProps & {
   onEditAction?: () => void;
 };
 
-const ProposalActionCard: React.FC<ProposalActionCardProps> = props => {
+const ProposalActionCard: FC<Props> = props => {
   const {
     className,
     title,
@@ -41,15 +41,15 @@ const ProposalActionCard: React.FC<ProposalActionCardProps> = props => {
 
   const { getEtherscanAddressUrl } = useWeb3();
 
-  const [ellipsis, setEllipsis] = React.useState<boolean>(false);
-  const [expanded, setExpanded] = React.useState<boolean>(false);
-  const [isSignature, showSignature] = React.useState<boolean>(false);
+  const [ellipsis, setEllipsis] = useState<boolean>(false);
+  const [expanded, setExpanded] = useState<boolean>(false);
+  const [isSignature, showSignature] = useState<boolean>(false);
 
-  const functionFragment = React.useMemo<AbiFunctionFragment | undefined>(() => {
+  const functionFragment = useMemo<AbiFunctionFragment | undefined>(() => {
     return AbiInterface.getFunctionFragmentFrom(signature);
   }, [signature]);
 
-  const functionParamValues = React.useMemo<AbiDecodeResult | undefined>(() => {
+  const functionParamValues = useMemo<AbiDecodeResult | undefined>(() => {
     if (!functionFragment) {
       return [];
     }
@@ -57,12 +57,12 @@ const ProposalActionCard: React.FC<ProposalActionCardProps> = props => {
     return AbiInterface.decodeFunctionData(functionFragment, callData) ?? [];
   }, [functionFragment, callData]);
 
-  const stringParams = React.useMemo<string>(() => {
+  const stringParams = useMemo<string>(() => {
     const params = functionParamValues?.map(param => AbiInterface.stringifyParamValue(param));
     return params?.join(',\n') ?? '';
   }, [functionParamValues]);
 
-  const etherscanLink = React.useMemo<string>(() => {
+  const etherscanLink = useMemo<string>(() => {
     return `${getEtherscanAddressUrl(target)}#writeContract`;
   }, [target]);
 

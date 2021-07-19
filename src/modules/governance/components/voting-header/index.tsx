@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import cn from 'classnames';
 import Erc20Contract from 'web3/erc20Contract';
@@ -34,7 +34,7 @@ const InitialState: VotingHeaderState = {
   showDetailedView: false,
 };
 
-const VotingHeader: React.FC = () => {
+const VotingHeader: FC = () => {
   const daoCtx = useDAO();
   const walletCtx = useWallet();
   const { projectToken } = useKnownTokens();

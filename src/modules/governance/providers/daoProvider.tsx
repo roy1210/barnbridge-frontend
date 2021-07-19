@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, createContext, useContext, useEffect } from 'react';
 import BigNumber from 'bignumber.js';
 import Erc20Contract from 'web3/erc20Contract';
 
@@ -41,13 +41,13 @@ type DAOContextType = DAOProviderState & {
   };
 };
 
-const Context = React.createContext<DAOContextType>(InvariantContext('DAOProvider'));
+const Context = createContext<DAOContextType>(InvariantContext('DAOProvider'));
 
 export function useDAO(): DAOContextType {
-  return React.useContext(Context);
+  return useContext(Context);
 }
 
-const DAOProvider: React.FC = props => {
+const DAOProvider: FC = props => {
   const { children } = props;
 
   const config = useConfig();
@@ -96,7 +96,7 @@ const DAOProvider: React.FC = props => {
 
   const [state, setState] = useMergeState<DAOProviderState>(InitialState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const bondContract = projectToken.contract as Erc20Contract;
 
     bondContract.setAccount(wallet.account); // ?
@@ -106,7 +106,7 @@ const DAOProvider: React.FC = props => {
     }
   }, [wallet.account]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const { isActive } = daoGovernance;
     const { bondStaked, votingPower } = daoBarn;
     const activationThreshold = config.dao?.activationThreshold;

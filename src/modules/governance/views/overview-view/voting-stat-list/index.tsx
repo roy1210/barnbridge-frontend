@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import cn from 'classnames';
 import Erc20Contract from 'web3/erc20Contract';
 import { formatToken, formatUSD } from 'web3/utils';
@@ -6,6 +5,7 @@ import { formatToken, formatUSD } from 'web3/utils';
 import ExternalLink from 'components/custom/externalLink';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
+import { FCx } from 'components/types.tx';
 import { UseLeftTime } from 'hooks/useLeftTime';
 import { useFetchOverview } from 'modules/governance/api';
 import { useDAO } from 'modules/governance/providers/daoProvider';
@@ -13,13 +13,9 @@ import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';
 
-import s from './s.module.scss';
+import s from 'modules/governance/views/overview-view/voting-stat-list/s.module.scss';
 
-export type VotingStatListProps = {
-  className?: string;
-};
-
-const VotingStatList: FC<VotingStatListProps> = props => {
+const VotingStatList: FCx = props => {
   const { className } = props;
 
   const daoCtx = useDAO();

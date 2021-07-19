@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import cn from 'classnames';
 import { formatToken } from 'web3/utils';
 
@@ -7,20 +7,16 @@ import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Hint, Text } from 'components/custom/typography';
+import { FCx } from 'components/types.tx';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useConfig } from 'providers/configProvider';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 
-import { useDAO } from 'modules/governance/providers/daoProvider';
-
-export type ActivationThresholdProps = {
-  className?: string;
-};
-
-const ActivationThreshold: React.FC<ActivationThresholdProps> = props => {
+const ActivationThreshold: FCx = props => {
   const { projectToken } = useKnownTokens();
   const config = useConfig();
   const daoCtx = useDAO();
-  const [activating, setActivating] = React.useState<boolean>(false);
+  const [activating, setActivating] = useState<boolean>(false);
 
   function handleActivate() {
     setActivating(true);

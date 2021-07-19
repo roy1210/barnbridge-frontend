@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { useState } from 'react';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
 import cn from 'classnames';
@@ -8,6 +8,7 @@ import Table from 'components/antd/table';
 import ExternalLink from 'components/custom/externalLink';
 import Identicon from 'components/custom/identicon';
 import { Text } from 'components/custom/typography';
+import { FCx } from 'components/types.tx';
 import { APIVoterEntity, useFetchVoters } from 'modules/governance/api';
 import { useWeb3 } from 'providers/web3Provider';
 
@@ -79,11 +80,7 @@ const Columns: ColumnsType<APIVoterEntity> = [
   },
 ];
 
-export type VotersTableProps = {
-  className?: string;
-};
-
-const VotersTable: FC<VotersTableProps> = props => {
+const VotersTable: FCx = props => {
   const { className } = props;
 
   const [page, setPage] = useState<number>(1);

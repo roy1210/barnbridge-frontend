@@ -1,4 +1,4 @@
-import React from 'react';
+import { ChangeEvent, FC, useState } from 'react';
 
 import Button from 'components/antd/button';
 import Input from 'components/antd/input';
@@ -7,17 +7,17 @@ import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 
-export type AddZerosPopupProps = {
+type Props = PopoverProps & {
   max?: number;
   onAdd: (value: number) => void;
 };
 
-const AddZerosPopup: React.FC<PopoverProps & AddZerosPopupProps> = props => {
+const AddZerosPopup: FC<Props> = props => {
   const { max, onAdd, ...popoverProps } = props;
-  const [visible, setVisible] = React.useState<boolean>(false);
-  const [value, setValue] = React.useState<string>('');
+  const [visible, setVisible] = useState<boolean>(false);
+  const [value, setValue] = useState<string>('');
 
-  function handleChange(ev: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(ev: ChangeEvent<HTMLInputElement>) {
     setValue(ev.target.value);
   }
 

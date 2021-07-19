@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AntdSpin from 'antd/lib/spin';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
@@ -54,16 +54,16 @@ type ActionColumnProps = {
   entity: SYPoolEntity;
 };
 
-const ActionColumn: React.FC<ActionColumnProps> = props => {
+const ActionColumn: FC<ActionColumnProps> = props => {
   const { provider, underlyingDecimals, underlyingSymbol, reloadFees } = props.entity;
   const wallet = useWallet();
 
-  const [confirmVisible, setConfirmVisible] = React.useState(false);
-  const [harvesting, setHarvesting] = React.useState(false);
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [harvesting, setHarvesting] = useState(false);
 
   const amount = provider.underlyingFees?.unscaleBy(underlyingDecimals);
 
-  const harvest = React.useCallback(async () => {
+  const harvest = useCallback(async () => {
     setConfirmVisible(false);
     setHarvesting(true);
 
@@ -227,17 +227,17 @@ const Filters: TableFilterType[] = [
   },
 ];
 
-const TreasuryFees: React.FC = () => {
+const TreasuryFees: FC = () => {
   const wallet = useWallet();
   const { convertTokenInUSD } = useKnownTokens();
-  const walletRef = React.useRef(wallet);
+  const walletRef = useRef(wallet);
   walletRef.current = wallet;
   const { getContract } = useContractManager();
   const syAPI = useSyAPI();
 
   const [reloadFees, versionFees] = useReload();
   const [reload, version] = useReload();
-  const [state, setState] = React.useState<State>(InitialState);
+  const [state, setState] = useState<State>(InitialState);
 
   function handleFilterChange(filters: Record<string, any>) {
     setState(prevState => ({
@@ -252,7 +252,7 @@ const TreasuryFees: React.FC = () => {
     }));
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState(prevState => ({
       ...prevState,
       fees: {
@@ -298,13 +298,13 @@ const TreasuryFees: React.FC = () => {
       });
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     state.fees.items.forEach(fee => {
       fee.provider.loadUnderlyingFees();
     });
   }, [state.fees.items, versionFees]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState(prevState => ({
       ...prevState,
       fees: {
@@ -314,7 +314,7 @@ const TreasuryFees: React.FC = () => {
     }));
   }, [wallet.isActive]);
 
-  const totalFees = React.useMemo(() => {
+  const totalFees = useMemo(() => {
     return state.fees.items.reduce((a, c) => {
       const amount = c.provider.underlyingFees?.unscaleBy(c.underlyingDecimals);
       const amountUSD = convertTokenInUSD(amount, c.underlyingSymbol);
@@ -323,7 +323,7 @@ const TreasuryFees: React.FC = () => {
     }, BigNumber.ZERO);
   }, [state.fees.items, version]);
 
-  const filteredFees = React.useMemo(() => {
+  const filteredFees = useMemo(() => {
     const { items, filters } = state.fees;
 
     return items.filter(

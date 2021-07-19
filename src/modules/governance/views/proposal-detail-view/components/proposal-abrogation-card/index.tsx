@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import AntdSpin from 'antd/lib/spin';
 
 import Button from 'components/antd/button';
@@ -7,9 +7,9 @@ import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
 import { APIProposalState } from 'modules/governance/api';
-
 import { useDAO } from 'modules/governance/providers/daoProvider';
-import { useProposal } from '../../providers/ProposalProvider';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
+
 import AbrogationProposalModal from '../abrogation-proposal-modal';
 import AbrogationVoteModal, { VoteAbrogationState } from '../abrogation-vote-modal';
 
@@ -27,7 +27,7 @@ const InitialState: ProposalAbrogationCardState = {
   cancelling: false,
 };
 
-const ProposalAbrogationCard: React.FC = () => {
+const ProposalAbrogationCard: FC = () => {
   const daoCtx = useDAO();
   const proposalCtx = useProposal();
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
 import { formatBigValue, shortenAddr } from 'web3/utils';
@@ -11,9 +11,10 @@ import Grid from 'components/custom/grid';
 import Identicon from 'components/custom/identicon';
 import { Text } from 'components/custom/typography';
 import { APIVoteEntity } from 'modules/governance/api';
+import AbrogationVotersProvider, { useAbrogationVoters } from 'modules/governance/providers/abrogationVotersProvider';
 import { useWeb3 } from 'providers/web3Provider';
 
-import AbrogationVotersProvider, { useAbrogationVoters } from '../../providers/AbrogationVotersProvider';
+import { injectProvider } from 'utils/component';
 
 import s from './s.module.scss';
 
@@ -65,9 +66,7 @@ const Columns: ColumnsType<APIVoteEntity> = [
   },
 ];
 
-export type AbrogationVotersModalProps = ModalProps;
-
-const AbrogationVotersModalInner: React.FC<AbrogationVotersModalProps> = props => {
+const AbrogationVotersModal: FC<ModalProps> = injectProvider(props => {
   const { ...modalProps } = props;
 
   const abrogationVotesCtx = useAbrogationVoters();
@@ -117,11 +116,6 @@ const AbrogationVotersModalInner: React.FC<AbrogationVotersModalProps> = props =
       />
     </Modal>
   );
-};
+}, AbrogationVotersProvider);
 
-const AbrogationVotersModal: React.FC<AbrogationVotersModalProps> = props => (
-  <AbrogationVotersProvider>
-    <AbrogationVotersModalInner {...props} />
-  </AbrogationVotersProvider>
-);
 export default AbrogationVotersModal;

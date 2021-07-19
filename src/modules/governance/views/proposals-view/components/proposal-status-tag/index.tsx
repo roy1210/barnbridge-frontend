@@ -1,17 +1,16 @@
-import React from 'react';
 import cn from 'classnames';
 
 import { Text } from 'components/custom/typography';
+import { FCx } from 'components/types.tx';
 import { APIProposalState, APIProposalStateMap } from 'modules/governance/api';
 
 import s from './s.module.scss';
 
-export type ProposalStatusTagProps = {
-  className?: string;
+type Props = {
   state: APIProposalState;
 };
 
-const ProposalStatusTag: React.FC<ProposalStatusTagProps> = props => {
+const ProposalStatusTag: FCx<Props> = props => {
   const { state, className } = props;
 
   return (

@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import { FC, createContext, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import * as Antd from 'antd';
 import BigNumber from 'bignumber.js';
 
 import useMergeState from 'hooks/useMergeState';
@@ -38,17 +37,17 @@ export type ProposalContextType = ProposalProviderState & {
   startAbrogationProposal(description: string, gasPrice: number): Promise<void>;
 };
 
-const Context = React.createContext<ProposalContextType>(InvariantContext('ProposalProvider'));
+const Context = createContext<ProposalContextType>(InvariantContext('ProposalProvider'));
 
 export function useProposal(): ProposalContextType {
-  return React.useContext(Context);
+  return useContext(Context);
 }
 
 export type ProposalProviderProps = {
   proposalId?: number;
 };
 
-const ProposalProvider: React.FC<ProposalProviderProps> = props => {
+const ProposalProvider: FC<ProposalProviderProps> = props => {
   const { proposalId, children } = props;
 
   const history = useHistory();
@@ -73,7 +72,7 @@ const ProposalProvider: React.FC<ProposalProviderProps> = props => {
     // history.push('/governance/proposals');
   }, [error]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState({
       forRate: undefined,
       againstRate: undefined,
@@ -118,7 +117,7 @@ const ProposalProvider: React.FC<ProposalProviderProps> = props => {
     });
   }, [state.proposal]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState({
       thresholdRate: undefined,
     });
@@ -140,7 +139,7 @@ const ProposalProvider: React.FC<ProposalProviderProps> = props => {
     });
   }, [state.proposal, daoCtx.daoBarn.bondStaked]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setState({
       receipt: undefined,
       votingPower: undefined,

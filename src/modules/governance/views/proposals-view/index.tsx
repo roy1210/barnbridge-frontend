@@ -1,4 +1,4 @@
-import React from 'react';
+import { ChangeEvent, FC, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import useDebounce from '@rooks/use-debounce';
 import AntdSpin from 'antd/lib/spin';
@@ -12,11 +12,11 @@ import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
-import ProposalsProvider, { useProposals } from 'modules/governance/views/proposals-view/providers/ProposalsProvider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
+import ProposalsProvider, { useProposals } from 'modules/governance/providers/proposalsProvider';
 import { useWallet } from 'wallets/walletProvider';
 
-import { useDAO } from 'modules/governance/providers/daoProvider';
-import ActivationThreshold from '../overview-view/components/activation-threshold';
+import ActivationThreshold from '../overview-view/activation-threshold';
 import ProposalsTable from './components/proposals-table';
 
 import s from './s.module.scss';
@@ -31,7 +31,7 @@ const InitialState: ProposalsViewState = {
   showWhyReason: false,
 };
 
-const ProposalsViewInner: React.FC = () => {
+const ProposalsViewInner: FC = () => {
   const history = useHistory();
   const wallet = useWallet();
   const daoCtx = useDAO();
@@ -43,11 +43,11 @@ const ProposalsViewInner: React.FC = () => {
     proposalsCtx.changeStateFilter(stateFilter);
   }
 
-  const handleSearchChange = useDebounce((ev: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = useDebounce((ev: ChangeEvent<HTMLInputElement>) => {
     proposalsCtx.changeSearchFilter(ev.target.value);
   }, 400);
 
-  React.useEffect(() => {
+  useEffect(() => {
     daoCtx.actions.hasActiveProposal().then(hasActiveProposal => {
       setState({ hasActiveProposal });
     });
@@ -134,7 +134,7 @@ const ProposalsViewInner: React.FC = () => {
   );
 };
 
-const ProposalsView: React.FC = () => {
+const ProposalsView: FC = () => {
   const history = useHistory();
   const daoCtx = useDAO();
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import * as Antd from 'antd';
 
 import Button from 'components/antd/button';
@@ -9,8 +9,7 @@ import GasFeeList from 'components/custom/gas-fee-list';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
-
-import { useProposal } from '../../providers/ProposalProvider';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
 import s from './s.module.scss';
 
@@ -24,8 +23,6 @@ const InitialFormValues: FormState = {
   gasPrice: undefined,
 };
 
-export type QueueForExecutionModalProps = ModalProps;
-
 type QueueForExecutionModalState = {
   submitting: boolean;
 };
@@ -34,7 +31,7 @@ const InitialState: QueueForExecutionModalState = {
   submitting: false,
 };
 
-const QueueForExecutionModal: React.FC<QueueForExecutionModalProps> = props => {
+const QueueForExecutionModal: FC<ModalProps> = props => {
   const { ...modalProps } = props;
 
   const [form] = Antd.Form.useForm<FormState>();

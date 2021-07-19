@@ -1,16 +1,16 @@
-import React from 'react';
+import { FC, useState } from 'react';
 
 import Button from 'components/antd/button';
 import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
-import { useProposal } from '../../providers/ProposalProvider';
 import ProposalVotersModal from '../proposal-voters-modal';
 
-const ProposalVoteResultsCard: React.FC = () => {
+const ProposalVoteResultsCard: FC = () => {
   const proposalCtx = useProposal();
-  const [votersModal, showVotersModal] = React.useState<boolean>(false);
+  const [votersModal, showVotersModal] = useState<boolean>(false);
 
   return (
     <>

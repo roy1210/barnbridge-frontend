@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Redirect, Route, Switch, useHistory, useRouteMatch } from 'react-router-dom';
 
 import Grid from 'components/custom/grid';
@@ -10,7 +10,7 @@ import PortfolioLock from 'modules/governance/views/portfolio-view/portfolio-loc
 import PortfolioWithdraw from 'modules/governance/views/portfolio-view/portfolio-withdraw';
 import { useWallet } from 'wallets/walletProvider';
 
-type PortfolioViewRouteParams = {
+type RouteParams = {
   action: string;
 };
 
@@ -19,7 +19,7 @@ const PortfolioView: FC = () => {
   const wallet = useWallet();
   const {
     params: { action = 'deposit' },
-  } = useRouteMatch<PortfolioViewRouteParams>();
+  } = useRouteMatch<RouteParams>();
   const [activeTab, setActiveTab] = useState<string>(action);
 
   useEffect(() => {

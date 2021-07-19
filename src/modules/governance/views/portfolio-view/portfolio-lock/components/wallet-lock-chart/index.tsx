@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import addDays from 'date-fns/addDays';
 import addHours from 'date-fns/addHours';
@@ -146,25 +146,25 @@ export type WalletLockChartProps = {
   lockEndDate: Date;
 };
 
-const WalletLockChart: React.FC<WalletLockChartProps> = props => {
+const WalletLockChart: FC<WalletLockChartProps> = props => {
   const { lockEndDate } = props;
 
   const { projectToken } = useKnownTokens();
   const daoCtx = useDAO();
   const { balance: stakedBalance } = daoCtx.daoBarn;
 
-  const multiplier = React.useMemo<number>(() => getPeriodRate(addYears(new Date(), 1), new Date(), lockEndDate), [
+  const multiplier = useMemo<number>(() => getPeriodRate(addYears(new Date(), 1), new Date(), lockEndDate), [
     lockEndDate,
   ]);
 
-  const myBonus = React.useMemo<BigNumber | undefined>(() => stakedBalance?.multipliedBy(multiplier - 1), [
+  const myBonus = useMemo<BigNumber | undefined>(() => stakedBalance?.multipliedBy(multiplier - 1), [
     stakedBalance,
     multiplier,
   ]);
 
-  const granularity = React.useMemo<GranularityType>(() => getGranularityType(lockEndDate), [lockEndDate]);
+  const granularity = useMemo<GranularityType>(() => getGranularityType(lockEndDate), [lockEndDate]);
 
-  const data = React.useMemo<GranularPeriod[]>(() => getGranularPeriods(granularity, lockEndDate), [
+  const data = useMemo<GranularPeriod[]>(() => getGranularPeriods(granularity, lockEndDate), [
     granularity,
     lockEndDate,
   ]);

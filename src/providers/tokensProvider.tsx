@@ -1,4 +1,4 @@
-import { FC, createContext, useCallback, useEffect, useRef } from 'react';
+import { FC, createContext, useCallback, useContext, useEffect, useRef } from 'react';
 import BigNumber from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 import Erc20Contract from 'web3/erc20Contract';
@@ -19,19 +19,120 @@ export enum Tokens {
   GUSD = 'GUSD',
   DAI = 'DAI',
   STK_AAVE = 'stkAAVE',
-  WMATIC = 'wMATIC',
+  WMATIC = 'MATIC',
   BOND = 'BOND',
   UNIV2 = 'UNI-V2',
 }
 
-export type TokenType = {
+export type BaseTokenType = {
   address: string;
   symbol: string;
   name: string;
   decimals: number;
-  price: BigNumber | undefined;
   icon: string | undefined;
 };
+
+export const WBTC: BaseTokenType = {
+  address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+  symbol: Tokens.WBTC,
+  name: 'Wrapped BTC',
+  decimals: 8,
+  icon: 'token-wbtc',
+};
+
+export const WETH: BaseTokenType = {
+  address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  symbol: Tokens.WETH,
+  name: 'Wrapped Ether',
+  decimals: 18,
+  icon: 'token-weth',
+};
+
+export const USDC: BaseTokenType = {
+  address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+  symbol: Tokens.USDC,
+  name: 'USD Coin',
+  decimals: 6,
+  icon: 'token-usdc',
+};
+
+export const USDT: BaseTokenType = {
+  address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+  symbol: Tokens.USDT,
+  name: 'Tether USD',
+  decimals: 6,
+  icon: 'token-usdt',
+};
+
+export const SUSD: BaseTokenType = {
+  address: '0x57ab1ec28d129707052df4df418d58a2d46d5f51',
+  symbol: Tokens.SUSD,
+  name: 'Synth sUSD',
+  decimals: 18,
+  icon: 'token-susd',
+};
+
+export const GUSD: BaseTokenType = {
+  address: '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd',
+  symbol: Tokens.GUSD,
+  name: 'Gemini dollar',
+  decimals: 2,
+  icon: 'token-gusd',
+};
+
+export const DAI: BaseTokenType = {
+  address: '0x6b175474e89094c44da98b954eedeac495271d0f',
+  symbol: Tokens.DAI,
+  name: 'Dai Stablecoin',
+  decimals: 18,
+  icon: 'token-dai',
+};
+
+export const STK_AAVE: BaseTokenType = {
+  address: '0x4da27a545c0c5b758a6ba100e3a049001de870f5',
+  symbol: Tokens.STK_AAVE,
+  name: 'Staked Aave',
+  decimals: 18,
+  icon: 'static/token-staked-aave',
+};
+
+export const MATIC: BaseTokenType = {
+  address: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
+  symbol: Tokens.WMATIC,
+  name: 'Matic Token',
+  decimals: 18,
+  icon: 'token-wmatic',
+};
+
+export const BOND: BaseTokenType = {
+  address: '0x0391d2021f89dc339f60fff84546ea23e337750f',
+  symbol: Tokens.BOND,
+  name: 'BarnBridge Governance Token',
+  decimals: 18,
+  icon: 'static/token-bond',
+};
+
+export const UNIV2: BaseTokenType = {
+  address: '0x6591c4bcd6d7a1eb4e537da8b78676c1576ba244',
+  symbol: Tokens.UNIV2,
+  name: 'Uniswap V2',
+  decimals: 18,
+  icon: 'static/token-uniswap',
+};
+
+export type TokenType = BaseTokenType & {
+  price?: BigNumber;
+};
+
+export type TokensContextType = {
+  getToken(symbol?: string): TokenType | undefined;
+};
+
+const Context = createContext<TokensContextType>(InvariantContext('TokensProvider'));
+
+export function useTokens(): TokensContextType {
+  return useContext(Context);
+}
 
 const CHAINLINK_PRICE_FEED_ABI: AbiItem[] = [
   createAbiItem('decimals', [], ['int8']),
@@ -42,70 +143,6 @@ const UNISWAP_V2_BOND_USDC_ABI: AbiItem[] = [
   createAbiItem('totalSupply', [], ['uint256']),
   createAbiItem('getReserves', [], ['uint112', 'uint112']),
 ];
-
-export type TokensContextType = {
-  getToken(symbol?: string): TokenType | undefined;
-};
-
-const Context = createContext<TokensContextType>(InvariantContext('TokensProvider'));
-
-function getTokenAddress(symbol: string): string | undefined {
-  switch (symbol) {
-    case Tokens.WBTC:
-      return '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599';
-    case Tokens.WETH:
-      return '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-    case Tokens.USDC:
-      return '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-    case Tokens.USDT:
-      return '0xdac17f958d2ee523a2206206994597c13d831ec7';
-    case Tokens.SUSD:
-      return '0x57ab1ec28d129707052df4df418d58a2d46d5f51';
-    case Tokens.DAI:
-      return '0x6b175474e89094c44da98b954eedeac495271d0f';
-    case Tokens.STK_AAVE:
-      return '0x4da27a545c0c5b758a6ba100e3a049001de870f5';
-    case Tokens.WMATIC:
-      return '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0';
-    case Tokens.GUSD:
-      return '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd';
-    case Tokens.BOND:
-      return '0x0391d2021f89dc339f60fff84546ea23e337750f';
-    case Tokens.UNIV2:
-      return '0x6591c4bcd6d7a1eb4e537da8b78676c1576ba244';
-    default:
-      return undefined;
-  }
-}
-
-function getTokenIcon(symbol: string): string | undefined {
-  switch (symbol) {
-    case Tokens.WBTC:
-      return 'token-wbtc';
-    case Tokens.WETH:
-      return 'token-weth';
-    case Tokens.USDC:
-      return 'token-usdc';
-    case Tokens.USDT:
-      return 'token-usdt';
-    case Tokens.SUSD:
-      return 'token-susd';
-    case Tokens.DAI:
-      return 'token-dai';
-    case Tokens.STK_AAVE:
-      return 'static/token-staked-aave';
-    case Tokens.WMATIC:
-      return 'token-wmatic';
-    case Tokens.GUSD:
-      return 'token-gusd';
-    case Tokens.BOND:
-      return 'static/token-bond';
-    case Tokens.UNIV2:
-      return 'static/token-uniswap';
-    default:
-      return undefined;
-  }
-}
 
 async function getChainlinkFeedPrice(feedAddress: string): Promise<BigNumber | undefined> {
   const contract = new Erc20Contract(CHAINLINK_PRICE_FEED_ABI, feedAddress);
@@ -195,6 +232,8 @@ async function getPriceFor(symbol: string): Promise<BigNumber | undefined> {
   }
 }
 
+const ALL_TOKENS: BaseTokenType[] = [WBTC, WETH, USDC, USDT, SUSD, GUSD, DAI, STK_AAVE, MATIC, BOND, UNIV2];
+
 const TokensProvider: FC = props => {
   const { children } = props;
 
@@ -202,41 +241,14 @@ const TokensProvider: FC = props => {
   const tokensRef = useRef<Map<string, TokenType>>(new Map());
 
   useEffect(() => {
-    const promises = [
-      Tokens.WBTC,
-      Tokens.WETH,
-      Tokens.USDC,
-      Tokens.USDT,
-      Tokens.SUSD,
-      Tokens.GUSD,
-      Tokens.DAI,
-      Tokens.STK_AAVE,
-      Tokens.WMATIC,
-      Tokens.BOND,
-      Tokens.UNIV2,
-    ].map(async symbol => {
-      const tokenAddress = getTokenAddress(symbol);
-
-      if (!tokenAddress) {
-        return;
-      }
-
+    const promises = ALL_TOKENS.map(async token => {
       try {
-        const tokenContract = new Erc20Contract([], tokenAddress);
-        tokenContract.setCallProvider(MainnetHttpsWeb3Provider);
-        await tokenContract.loadCommon();
-
-        const tokenObj: TokenType = {
-          address: tokenAddress,
-          symbol: tokenContract.symbol!,
-          name: tokenContract.name,
-          decimals: tokenContract.decimals!,
-          price: undefined,
-          icon: getTokenIcon(symbol),
+        const newToken: TokenType = {
+          ...token,
         };
 
-        tokensRef.current.set(symbol, tokenObj);
-        tokenObj.price = await getPriceFor(symbol);
+        tokensRef.current.set(newToken.symbol, newToken);
+        newToken.price = await getPriceFor(token.symbol);
         reload();
       } catch (e) {
         console.error(e);

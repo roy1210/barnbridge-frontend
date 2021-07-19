@@ -1,13 +1,11 @@
-import React from 'react';
+import { FC } from 'react';
 
 import Button from 'components/antd/button';
 import Modal, { ModalProps } from 'components/antd/modal';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 
-export type DeleteProposalActionModalProps = ModalProps;
-
-const DeleteProposalActionModal: React.FC<DeleteProposalActionModalProps> = props => {
+const DeleteProposalActionModal: FC<ModalProps> = props => {
   const { ...modalProps } = props;
 
   return (

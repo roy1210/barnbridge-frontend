@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 
 import Button from 'components/antd/button';
 import Modal, { ModalProps } from 'components/antd/modal';
@@ -8,13 +8,13 @@ import { Text } from 'components/custom/typography';
 
 import ProposalActionCard from '../proposal-action-card';
 
-export type SimulatedProposalActionModalProps = ModalProps & {
+type Props = ModalProps & {
   targetAddress: any;
   functionSignature: any;
   functionEncodedParams: any;
 };
 
-const SimulatedProposalActionModal: React.FC<SimulatedProposalActionModalProps> = props => {
+const SimulatedProposalActionModal: FC<Props> = props => {
   const { targetAddress, functionSignature, functionEncodedParams, ...modalProps } = props;
 
   return (

@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useEffect } from 'react';
 import AntdForm from 'antd/lib/form';
 import AntdRadio from 'antd/lib/radio';
 import { formatBigValue } from 'web3/utils';
@@ -12,8 +12,7 @@ import GasFeeList from 'components/custom/gas-fee-list';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
-
-import { useProposal } from '../../providers/ProposalProvider';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
 import s from './s.module.scss';
 
@@ -37,10 +36,6 @@ const InitialFormValues: FormState = {
   gasPrice: undefined,
 };
 
-export type ProposalVoteModalProps = {
-  voteState: VoteState;
-};
-
 type ProposalVoteModalState = {
   submitting: boolean;
 };
@@ -49,7 +44,11 @@ const InitialState: ProposalVoteModalState = {
   submitting: false,
 };
 
-const ProposalVoteModal: React.FC<ModalProps & ProposalVoteModalProps> = props => {
+type Props = ModalProps & {
+  voteState: VoteState;
+};
+
+const ProposalVoteModal: FC<Props> = props => {
   const { voteState, ...modalProps } = props;
 
   const [form] = AntdForm.useForm<FormState>();
@@ -85,7 +84,7 @@ const ProposalVoteModal: React.FC<ModalProps & ProposalVoteModalProps> = props =
     setState({ submitting: false });
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (voteState === VoteState.VoteChange) {
       form.setFieldsValue({
         changeOption: proposalCtx.receipt?.support,

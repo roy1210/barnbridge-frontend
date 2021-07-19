@@ -1,12 +1,11 @@
-import React from 'react';
+import { FC } from 'react';
 
 import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 
-import { useProposal } from '../../providers/ProposalProvider';
-
-const ProposalQuorumCard: React.FC = () => {
+const ProposalQuorumCard: FC = () => {
   const proposalCtx = useProposal();
 
   const passed = (proposalCtx.quorum ?? 0) >= (proposalCtx.proposal?.minQuorum ?? 0);

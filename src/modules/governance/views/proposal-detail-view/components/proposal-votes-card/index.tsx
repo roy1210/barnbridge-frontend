@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useState } from 'react';
 import { formatBigValue } from 'web3/utils';
 
 import Alert from 'components/antd/alert';
@@ -7,9 +7,9 @@ import Progress from 'components/antd/progress';
 import Grid from 'components/custom/grid';
 import { Text } from 'components/custom/typography';
 import { APIProposalState } from 'modules/governance/api';
+import { useProposal } from 'modules/governance/providers/proposalProvider';
 import { useWallet } from 'wallets/walletProvider';
 
-import { useProposal } from '../../providers/ProposalProvider';
 import ProposalVoteModal, { VoteState } from '../proposal-vote-modal';
 import ProposalVotersModal from '../proposal-voters-modal';
 
@@ -25,11 +25,11 @@ const InitialState: ProposalVotesCardState = {
   voteState: VoteState.None,
 };
 
-const ProposalVotesCard: React.FC = () => {
+const ProposalVotesCard: FC = () => {
   const wallet = useWallet();
   const proposalCtx = useProposal();
 
-  const [state, setState] = React.useState<ProposalVotesCardState>(InitialState);
+  const [state, setState] = useState<ProposalVotesCardState>(InitialState);
 
   function handleShowVotersModal() {
     setState(prevState => ({

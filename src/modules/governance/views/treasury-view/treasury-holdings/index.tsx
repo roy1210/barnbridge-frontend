@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { CSSProperties, FC, useMemo, useState } from 'react';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
 import format from 'date-fns/format';
@@ -230,11 +230,11 @@ function getFilters(tokens: APITreasuryTokenEntity[]): TableFilterType[] {
   ];
 }
 
-const TreasuryHoldings: React.FC = () => {
+const TreasuryHoldings: FC = () => {
   const config = useConfig();
   const { getContract } = useContractManager();
   const [reload, version] = useReload();
-  const [state, setState] = React.useState<State>(InitialState);
+  const [state, setState] = useState<State>(InitialState);
   const { getTokenBySymbol, convertTokenInUSD } = useKnownTokens();
   const { data: treasuryTokens = [] } = useFetchTreasuryTokens();
   const tokens = useMemo(() => {
@@ -289,7 +289,7 @@ const TreasuryHoldings: React.FC = () => {
     }));
   }
 
-  const totalHoldings = React.useMemo(() => {
+  const totalHoldings = useMemo(() => {
     if (state.tokens.loading) {
       return undefined;
     }
@@ -310,7 +310,7 @@ const TreasuryHoldings: React.FC = () => {
       <Text type="h2" weight="bold" color="primary" className="mb-40">
         {formatUSD(totalHoldings) ?? '-'}
       </Text>
-      <div className="flexbox-list mb-32" style={{ '--gap': '32px' } as React.CSSProperties}>
+      <div className="flexbox-list mb-32" style={{ '--gap': '32px' } as CSSProperties}>
         {state.tokens.items.map(item => {
           const tokenMeta = getTokenBySymbol(item.tokenSymbol);
           const amount = item.token.getBalanceOf(config.contracts.dao?.governance)?.unscaleBy(item.tokenDecimals);
