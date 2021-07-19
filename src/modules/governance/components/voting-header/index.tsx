@@ -14,7 +14,7 @@ import Icon from 'components/custom/icon';
 import { Hint, Text } from 'components/custom/typography';
 import { UseLeftTime } from 'hooks/useLeftTime';
 import useMergeState from 'hooks/useMergeState';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 

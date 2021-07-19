@@ -15,7 +15,7 @@ import useMergeState from 'hooks/useMergeState';
 import ProposalsProvider, { useProposals } from 'modules/governance/views/proposals-view/providers/ProposalsProvider';
 import { useWallet } from 'wallets/walletProvider';
 
-import { useDAO } from '../../components/dao-provider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import ActivationThreshold from '../overview-view/components/activation-threshold';
 import ProposalsTable from './components/proposals-table';
 

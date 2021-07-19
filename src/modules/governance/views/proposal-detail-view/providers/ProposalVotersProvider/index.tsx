@@ -1,7 +1,7 @@
 import React from 'react';
 
 import useMergeState from 'hooks/useMergeState';
-import { APIVoteEntity, useDaoAPI } from 'modules/governance/api';
+import { APIVoteEntity, useFetchProposalVoters } from 'modules/governance/api';
 
 import { useProposal } from '../ProposalProvider';
 
@@ -39,37 +39,9 @@ export function useProposalVoters(): ProposalVotersContextType {
 const ProposalVotersProvider: React.FC = props => {
   const { children } = props;
 
-  const daoAPI = useDaoAPI();
   const { proposal } = useProposal();
   const [state, setState] = useMergeState<ProposalVotersProviderState>(InitialState);
-
-  React.useEffect(() => {
-    if (!proposal?.proposalId) {
-      setState({
-        votes: [],
-        total: 0,
-      });
-      return;
-    }
-
-    setState({ loading: true });
-
-    daoAPI
-      .fetchProposalVoters(proposal.proposalId, state.page, state.pageSize, state.supportFilter)
-      .then(data => {
-        setState({
-          loading: false,
-          votes: data.data,
-          total: data.meta.count,
-        });
-      })
-      .catch(() => {
-        setState({
-          loading: false,
-          votes: [],
-        });
-      });
-  }, [proposal, state.page, state.supportFilter]);
+  useFetchProposalVoters(proposal?.proposalId ?? 0, state.page, state.supportFilter); // TODO: DAO
 
   function changeSupportFilter(supportFilter?: boolean) {
     setState({

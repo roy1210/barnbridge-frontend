@@ -7,8 +7,8 @@ import { MainnetNetwork } from 'networks/mainnet';
 import { MumbaiNetwork } from 'networks/mumbai';
 import { PolygonNetwork } from 'networks/polygon';
 import { TestnetNetwork } from 'networks/testnet';
-import { isDevelopmentMode, isProductionMode } from 'providers/configProvider';
 
+import { isDevelopmentMode, isProductionMode } from 'utils';
 import { InvariantContext } from 'utils/context';
 
 import { Web3Network } from 'networks/types';
@@ -58,7 +58,7 @@ const NetworkProvider: FC = props => {
     return network ?? networks[0];
   }, [lastNetwork]);
 
-  const [activeNetwork] = useState<Web3Network>(initialNetwork);
+  const [activeNetwork, setActiveNetwork] = useState<Web3Network>(initialNetwork);
 
   const findNetwork = useCallback((networkId: string): Web3Network | undefined => {
     return networks.find(n => n.id.toLowerCase() === networkId.toLowerCase());
@@ -73,6 +73,7 @@ const NetworkProvider: FC = props => {
 
     if (network) {
       setLastNetwork(network.id.toLowerCase());
+      setActiveNetwork(network);
       window.location.reload();
     }
 

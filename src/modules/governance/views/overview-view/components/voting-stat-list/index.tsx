@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import cn from 'classnames';
 import Erc20Contract from 'web3/erc20Contract';
 import { formatToken, formatUSD } from 'web3/utils';
@@ -7,8 +7,8 @@ import ExternalLink from 'components/custom/externalLink';
 import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
 import { UseLeftTime } from 'hooks/useLeftTime';
-import { APIOverviewData, useDaoAPI } from 'modules/governance/api';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { useFetchOverview } from 'modules/governance/api';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';
@@ -19,17 +19,13 @@ export type VotingStatListProps = {
   className?: string;
 };
 
-const VotingStatList: React.FC<VotingStatListProps> = props => {
+const VotingStatList: FC<VotingStatListProps> = props => {
   const { className } = props;
 
-  const daoAPI = useDaoAPI();
   const daoCtx = useDAO();
   const { projectToken, convertTokenInUSD } = useKnownTokens();
-  const [overview, setOverview] = React.useState<APIOverviewData | undefined>();
 
-  React.useEffect(() => {
-    daoAPI.fetchOverviewData().then(setOverview);
-  }, []);
+  const { data: overview } = useFetchOverview();
 
   return (
     <div className={cn(s.cards, className)}>

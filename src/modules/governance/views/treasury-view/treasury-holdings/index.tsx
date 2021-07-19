@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
 import format from 'date-fns/format';
@@ -14,7 +14,12 @@ import Icon, { IconNames, TokenIconNames } from 'components/custom/icon';
 import TableFilter, { TableFilterType } from 'components/custom/table-filter';
 import { Text } from 'components/custom/typography';
 import { useReload } from 'hooks/useReload';
-import { APITreasuryHistory, APITreasuryToken, useDaoAPI } from 'modules/governance/api';
+import {
+  APITreasuryHistory,
+  APITreasuryToken,
+  useFetchTreasuryHistory,
+  useFetchTreasuryTokens,
+} from 'modules/governance/api';
 import { useConfig } from 'providers/configProvider';
 import { useContractManager } from 'providers/contractManagerProvider';
 import { KnownTokens, useKnownTokens } from 'providers/knownTokensProvider';
@@ -228,10 +233,37 @@ function getFilters(tokens: APITreasuryTokenEntity[]): TableFilterType[] {
 const TreasuryHoldings: React.FC = () => {
   const config = useConfig();
   const { getContract } = useContractManager();
-  const daoAPI = useDaoAPI();
   const [reload, version] = useReload();
   const [state, setState] = React.useState<State>(InitialState);
   const { getTokenBySymbol, convertTokenInUSD } = useKnownTokens();
+  const { data: treasuryTokens = [] } = useFetchTreasuryTokens();
+  const tokens = useMemo(() => {
+    const items = treasuryTokens.filter(item => Boolean(getTokenBySymbol(item.tokenSymbol as KnownTokens)));
+
+    const mappedItems = items.map(item => {
+      const tokenContract = getContract<Erc20Contract>(item.tokenAddress, () => {
+        return new Erc20Contract([], item.tokenAddress);
+      });
+      tokenContract.on(Web3Contract.UPDATE_DATA, reload);
+      tokenContract.loadCommon();
+      tokenContract.loadBalance(config.contracts.dao?.governance);
+
+      return {
+        ...item,
+        token: tokenContract,
+      };
+    });
+
+    mappedItems.sort((a, b) => (a.token.balance?.gt(b.token.balance ?? 0) ? 1 : -1));
+
+    return mappedItems;
+  }, [treasuryTokens]);
+
+  const { data: historyItems = [] } = useFetchTreasuryHistory(
+    state.history.page,
+    state.history.filters.token,
+    state.history.filters.direction,
+  );
 
   function handlePaginationChange(page: number) {
     setState(prevState => ({
@@ -256,94 +288,6 @@ const TreasuryHoldings: React.FC = () => {
       },
     }));
   }
-
-  React.useEffect(() => {
-    setState(prevState => ({
-      ...prevState,
-      tokens: {
-        ...prevState.tokens,
-        loading: true,
-      },
-    }));
-
-    daoAPI
-      .fetchTreasuryTokens()
-      .then(data => {
-        const items = data.filter(item => Boolean(getTokenBySymbol(item.tokenSymbol as KnownTokens)));
-
-        const mappedItems = items.map(item => {
-          const tokenContract = getContract<Erc20Contract>(item.tokenAddress, () => {
-            return new Erc20Contract([], item.tokenAddress);
-          });
-          tokenContract.on(Web3Contract.UPDATE_DATA, reload);
-          tokenContract.loadCommon();
-          tokenContract.loadBalance(config.contracts.dao?.governance);
-
-          return {
-            ...item,
-            token: tokenContract,
-          };
-        });
-
-        mappedItems.sort((a, b) => (a.token.balance?.gt(b.token.balance ?? 0) ? 1 : -1));
-
-        setState(prevState => ({
-          ...prevState,
-          tokens: {
-            ...prevState.tokens,
-            items: mappedItems,
-            loading: false,
-          },
-        }));
-      })
-      .catch(() => {
-        setState(prevState => ({
-          ...prevState,
-          tokens: {
-            ...prevState.tokens,
-            items: [],
-            loading: false,
-          },
-        }));
-      });
-  }, []);
-
-  React.useEffect(() => {
-    const { page, pageSize, filters } = state.history;
-
-    setState(prevState => ({
-      ...prevState,
-      history: {
-        ...prevState.history,
-        loading: true,
-      },
-    }));
-
-    daoAPI
-      .fetchTreasuryHistory(page, pageSize, filters.token, filters.direction)
-      .then(data => {
-        setState(prevState => ({
-          ...prevState,
-          history: {
-            ...prevState.history,
-            items: data.data,
-            total: data.meta.count,
-            loading: false,
-          },
-        }));
-      })
-      .catch(() => {
-        setState(prevState => ({
-          ...prevState,
-          history: {
-            ...prevState.history,
-            items: [],
-            total: 0,
-            loading: false,
-          },
-        }));
-      });
-  }, [state.history.page, state.history.filters]);
 
   const totalHoldings = React.useMemo(() => {
     if (state.tokens.loading) {

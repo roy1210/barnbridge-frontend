@@ -15,7 +15,7 @@ import Icon, { IconNames } from 'components/custom/icon';
 import { Spinner } from 'components/custom/spinner';
 import { Text } from 'components/custom/typography';
 import { UseLeftTime } from 'hooks/useLeftTime';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 
 import { getFormattedDuration } from 'utils';

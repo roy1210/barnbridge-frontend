@@ -7,7 +7,7 @@ import Modal, { ModalProps } from 'components/antd/modal';
 import Icon from 'components/custom/icon';
 import { useLeftTime } from 'hooks/useLeftTime';
 import useMergeState from 'hooks/useMergeState';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 
 import { isValidAddress } from 'utils';
 

@@ -2,13 +2,13 @@ import React from 'react';
 import BigNumber from 'bignumber.js';
 import Erc20Contract from 'web3/erc20Contract';
 
+import { useContractFactory } from 'hooks/useContract';
 import useMergeState from 'hooks/useMergeState';
 import { APIProposalStateId } from 'modules/governance/api';
 import DaoBarnContract from 'modules/governance/contracts/daoBarn';
 import DaoGovernanceContract from 'modules/governance/contracts/daoGovernance';
 import DaoRewardContract from 'modules/governance/contracts/daoReward';
 import { useConfig } from 'providers/configProvider';
-import { useContract } from 'providers/contractManagerProvider';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
@@ -51,39 +51,60 @@ const DAOProvider: React.FC = props => {
   const { children } = props;
 
   const config = useConfig();
-  const walletCtx = useWallet();
+  const wallet = useWallet();
 
-  const daoBarn = useContract<DaoBarnContract>(config.contracts.dao?.barn!, () => {
-    return new DaoBarnContract(config.contracts.dao?.barn!);
-  });
-  const daoGovernance = useContract<DaoGovernanceContract>(config.contracts.dao?.governance!, () => {
-    return new DaoGovernanceContract(config.contracts.dao?.governance!);
-  });
-  const daoReward = useContract<DaoRewardContract>(config.contracts.dao?.reward!, () => {
-    return new DaoRewardContract(config.contracts.dao?.reward!);
-  });
+  const { getContract, Listeners } = useContractFactory();
+
+  const daoBarn = getContract(
+    config.contracts.dao?.barn!,
+    () => {
+      return new DaoBarnContract(config.contracts.dao?.barn!);
+    },
+    {
+      afterInit: contract => {
+        contract.loadCommonData().catch(Error);
+        contract.loadUserData().catch(Error);
+      },
+    },
+  );
+  const daoGovernance = getContract(
+    config.contracts.dao?.governance!,
+    () => {
+      return new DaoGovernanceContract(config.contracts.dao?.governance!);
+    },
+    {
+      afterInit: contract => {
+        contract.loadCommonData().catch(Error);
+        contract.loadUserData().catch(Error);
+      },
+    },
+  );
+  const daoReward = getContract(
+    config.contracts.dao?.reward!,
+    () => {
+      return new DaoRewardContract(config.contracts.dao?.reward!);
+    },
+    {
+      afterInit: contract => {
+        contract.loadCommonData().catch(Error);
+        contract.loadUserData().catch(Error);
+      },
+    },
+  );
+
   const { projectToken } = useKnownTokens();
 
   const [state, setState] = useMergeState<DAOProviderState>(InitialState);
 
   React.useEffect(() => {
-    daoGovernance.loadCommonData();
-    daoReward.loadCommonData();
-    daoBarn.loadCommonData();
-  }, []);
-
-  React.useEffect(() => {
     const bondContract = projectToken.contract as Erc20Contract;
 
-    bondContract.setAccount(walletCtx.account); // ?
+    bondContract.setAccount(wallet.account); // ?
 
-    if (walletCtx.account) {
-      daoGovernance.loadUserData();
-      daoReward.loadUserData();
-      daoBarn.loadUserData();
+    if (wallet.account) {
       bondContract.loadAllowance(config.contracts.dao?.barn!).catch(Error);
     }
-  }, [walletCtx.account]);
+  }, [wallet.account]);
 
   React.useEffect(() => {
     const { isActive } = daoGovernance;
@@ -120,11 +141,11 @@ const DAOProvider: React.FC = props => {
   }
 
   function hasActiveProposal(): Promise<boolean> {
-    if (!walletCtx.account) {
+    if (!wallet.account) {
       return Promise.resolve(false);
     }
 
-    return daoGovernance.getLatestProposalIds(walletCtx.account).then(proposalId => {
+    return daoGovernance.getLatestProposalIds(wallet.account).then(proposalId => {
       if (!proposalId) {
         return Promise.resolve(false);
       }
@@ -163,6 +184,7 @@ const DAOProvider: React.FC = props => {
         },
       }}>
       {children}
+      {Listeners}
     </Context.Provider>
   );
 };

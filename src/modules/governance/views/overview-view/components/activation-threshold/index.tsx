@@ -10,7 +10,7 @@ import { Hint, Text } from 'components/custom/typography';
 import { useConfig } from 'providers/configProvider';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 
-import { useDAO } from '../../../../components/dao-provider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 
 export type ActivationThresholdProps = {
   className?: string;

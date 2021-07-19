@@ -13,7 +13,7 @@ import { Spinner } from 'components/custom/spinner';
 import StatusTag from 'components/custom/status-tag';
 import TokenInput from 'components/custom/token-input';
 import { Text } from 'components/custom/typography';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import RadioCard from 'modules/smart-yield/components/radio-card';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWeb3 } from 'providers/web3Provider';

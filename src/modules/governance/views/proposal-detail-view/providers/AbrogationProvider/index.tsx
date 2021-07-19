@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import * as Antd from 'antd';
 import BigNumber from 'bignumber.js';
 
 import useMergeState from 'hooks/useMergeState';
 import { useReload } from 'hooks/useReload';
-import { APIAbrogationEntity, useDaoAPI } from 'modules/governance/api';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { APIAbrogationEntity, useFetchAbrogation } from 'modules/governance/api';
 import { AbrogationProposalReceipt } from 'modules/governance/contracts/daoGovernance';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { useProposal } from '../ProposalProvider';
@@ -46,41 +46,26 @@ const AbrogationProvider: React.FC = props => {
   const history = useHistory();
   const [reload, version] = useReload();
   const wallet = useWallet();
-  const daoAPI = useDaoAPI();
   const daoCtx = useDAO();
   const { proposal } = useProposal();
+  const { data, error } = useFetchAbrogation(proposal?.proposalId ?? 0); /// TODO: DAO
 
   const [state, setState] = useMergeState<AbrogationProviderState>(InitialState);
 
-  React.useEffect(() => {
-    if (!proposal) {
-      setState({
-        abrogation: undefined,
-      });
-      return;
-    }
-
-    daoAPI
-      .fetchAbrogation(proposal.proposalId)
-      .then(abrogation => {
-        setState({
-          abrogation,
-        });
-      })
-      .catch((status: number) => {
-        if (status === 404) {
-          Antd.notification.error({
-            message: `Proposal with id=${proposal.proposalId} doesn't exist.`,
-          });
-        } else {
-          Antd.notification.error({
-            message: `Failed to fetch proposal with id=${proposal.proposalId}. (Status: ${status})`,
-          });
-        }
-
-        history.push(`/governance/proposals/${proposal.proposalId}`);
-      });
-  }, [proposal, version]);
+  useEffect(() => {
+    /// TODO: DAO
+    // if (status === 404) {
+    //   Antd.notification.error({
+    //     message: `Proposal with id=${proposal.proposalId} doesn't exist.`,
+    //   });
+    // } else {
+    //   Antd.notification.error({
+    //     message: `Failed to fetch proposal with id=${proposal.proposalId}. (Status: ${status})`,
+    //   });
+    // }
+    //
+    // history.push(`/governance/proposals/${proposal.proposalId}`);
+  }, [error]);
 
   React.useEffect(() => {
     setState({

@@ -1,7 +1,6 @@
-import React from 'react';
+import { FC, createContext, useContext, useState } from 'react';
 
-import useMergeState from 'hooks/useMergeState';
-import { APILiteProposalEntity, useDaoAPI } from 'modules/governance/api';
+import { APILiteProposalEntity, useFetchProposals } from 'modules/governance/api';
 
 import { InvariantContext } from 'utils/context';
 
@@ -9,105 +8,65 @@ export type LiteProposalEntity = APILiteProposalEntity & {
   stateTimeLeftTs: number;
 };
 
-export type ProposalsProviderState = {
+type ContextType = {
   proposals: LiteProposalEntity[];
+  loading: boolean;
   total: number;
   page: number;
   pageSize: number;
-  loading: boolean;
-  stateFilter?: string;
-  searchFilter?: string;
-};
-
-const InitialState: ProposalsProviderState = {
-  proposals: [],
-  total: 0,
-  page: 1,
-  pageSize: 10,
-  loading: false,
-  stateFilter: undefined,
-  searchFilter: undefined,
-};
-
-export type ProposalsContextType = ProposalsProviderState & {
+  stateFilter: string | undefined;
+  searchFilter: string | undefined;
   changeStateFilter(stateFilter: string): void;
   changeSearchFilter(searchFilter: string): void;
   changePage(page: number): void;
 };
 
-const Context = React.createContext<ProposalsContextType>(InvariantContext('ProposalsProvider'));
+const Context = createContext<ContextType>(InvariantContext('ProposalsProvider'));
 
-export function useProposals(): ProposalsContextType {
-  return React.useContext(Context);
+export function useProposals(): ContextType {
+  return useContext(Context);
 }
 
-export type ProposalsProviderProps = {
-  stateFilter?: string;
-  searchFilter?: string;
-};
+const ProposalsProvider: FC = props => {
+  const { children } = props;
 
-const ProposalsProvider: React.FC<ProposalsProviderProps> = props => {
-  const { stateFilter, searchFilter, children } = props;
+  const [stateFilter, setStateFilter] = useState<string | undefined>();
+  const [searchFilter, setSearchFilter] = useState<string | undefined>();
+  const [page, setPage] = useState(1);
 
-  const daoAPI = useDaoAPI();
-  const [state, setState] = useMergeState<ProposalsProviderState>(InitialState);
-
-  React.useEffect(() => {
-    setState({
-      stateFilter,
-      searchFilter,
-      page: 1,
-    });
-  }, [stateFilter, searchFilter]);
-
-  React.useEffect(() => {
-    setState({
-      loading: true,
-    });
-
-    daoAPI
-      .fetchProposals(state.page, state.pageSize, state.stateFilter, state.searchFilter)
-      .then(data => {
-        setState({
-          loading: false,
-          proposals: data.data.map(item => ({
-            ...item,
-            stateTimeLeftTs: Date.now() + (item.stateTimeLeft ?? 0) * 1_000,
-          })),
-          total: data.meta.count,
-        });
-      })
-      .catch(() => {
-        setState({
-          loading: false,
-          proposals: [],
-        });
-      });
-  }, [state.page, state.stateFilter, state.searchFilter]);
+  const { data, loading } = useFetchProposals(page, stateFilter, searchFilter);
+  const proposals = data?.data.map(item => ({
+    ...item,
+    stateTimeLeftTs: Date.now() + (item.stateTimeLeft ?? 0) * 1_000,
+  }));
+  const totalProposals = data?.meta.count ?? 0;
 
   function changeStateFilter(value: string) {
-    setState({ stateFilter: value });
+    setStateFilter(value);
   }
 
   function changeSearchFilter(value: string) {
-    setState({ searchFilter: value });
+    setSearchFilter(value);
   }
 
   function changePage(page: number) {
-    setState({ page });
+    setPage(page);
   }
 
-  return (
-    <Context.Provider
-      value={{
-        ...state,
-        changeStateFilter,
-        changeSearchFilter,
-        changePage,
-      }}>
-      {children}
-    </Context.Provider>
-  );
+  const value: ContextType = {
+    loading,
+    proposals: proposals as LiteProposalEntity[],
+    total: totalProposals,
+    stateFilter,
+    searchFilter,
+    pageSize: 10,
+    page,
+    changeStateFilter,
+    changeSearchFilter,
+    changePage,
+  };
+
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 };
 
 export default ProposalsProvider;

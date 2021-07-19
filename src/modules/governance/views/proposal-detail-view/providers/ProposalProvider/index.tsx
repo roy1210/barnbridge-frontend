@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import * as Antd from 'antd';
 import BigNumber from 'bignumber.js';
 
 import useMergeState from 'hooks/useMergeState';
 import { useReload } from 'hooks/useReload';
-import { APIProposalEntity, useDaoAPI } from 'modules/governance/api';
-import { useDAO } from 'modules/governance/components/dao-provider';
+import { APIProposalEntity, useFetchProposal } from 'modules/governance/api';
 import { ProposalReceipt } from 'modules/governance/contracts/daoGovernance';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';
@@ -53,37 +53,25 @@ const ProposalProvider: React.FC<ProposalProviderProps> = props => {
 
   const history = useHistory();
   const wallet = useWallet();
-  const daoAPI = useDaoAPI();
   const daoCtx = useDAO();
   const [reload, version] = useReload();
 
   const [state, setState] = useMergeState<ProposalProviderState>(InitialState);
+  const { data: proposal, error } = useFetchProposal(proposalId ?? 0); /// TODO: DAO
 
-  React.useEffect(() => {
-    if (!proposalId) {
-      setState({ proposal: undefined });
-      return;
-    }
-
-    daoAPI
-      .fetchProposal(proposalId)
-      .then(proposal => {
-        setState({ proposal });
-      })
-      .catch((status: number) => {
-        if (status === 404) {
-          Antd.notification.error({
-            message: `Proposal with id=${proposalId} doesn't exist.`,
-          });
-        } else {
-          Antd.notification.error({
-            message: `Failed to fetch proposal with id=${proposalId}. (Status: ${status})`,
-          });
-        }
-
-        history.push('/governance/proposals');
-      });
-  }, [proposalId, version]);
+  useEffect(() => {
+    // if (status === 404) {
+    //   Antd.notification.error({
+    //     message: `Proposal with id=${proposalId} doesn't exist.`,
+    //   });
+    // } else {
+    //   Antd.notification.error({
+    //     message: `Failed to fetch proposal with id=${proposalId}. (Status: ${status})`,
+    //   });
+    // }
+    //
+    // history.push('/governance/proposals');
+  }, [error]);
 
   React.useEffect(() => {
     setState({

@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC, useState } from 'react';
 import { ColumnsType } from 'antd/lib/table/interface';
 import BigNumber from 'bignumber.js';
 import cn from 'classnames';
@@ -8,7 +8,7 @@ import Table from 'components/antd/table';
 import ExternalLink from 'components/custom/externalLink';
 import Identicon from 'components/custom/identicon';
 import { Text } from 'components/custom/typography';
-import { APIVoterEntity, useDaoAPI } from 'modules/governance/api';
+import { APIVoterEntity, useFetchVoters } from 'modules/governance/api';
 import { useWeb3 } from 'providers/web3Provider';
 
 const Columns: ColumnsType<APIVoterEntity> = [
@@ -83,30 +83,15 @@ export type VotersTableProps = {
   className?: string;
 };
 
-const VotersTable: React.FC<VotersTableProps> = props => {
+const VotersTable: FC<VotersTableProps> = props => {
   const { className } = props;
 
-  const daoAPI = useDaoAPI();
-  const [loading, setLoading] = React.useState<boolean>(false);
-  const [voters, setVoters] = React.useState<APIVoterEntity[]>([]);
-  const [totalVoters, setTotal] = React.useState<number>(0);
-  const [page, setPage] = React.useState<number>(1);
+  const [page, setPage] = useState<number>(1);
   const pageSize = 10;
 
-  React.useEffect(() => {
-    setLoading(true);
-
-    daoAPI
-      .fetchVoters(page, pageSize)
-      .then(data => {
-        setVoters(data.data);
-        setTotal(data.meta.count);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, [page, pageSize]);
+  const { data, loading } = useFetchVoters(page);
+  const voters = data?.data ?? [];
+  const totalVoters = data?.meta?.count;
 
   return (
     <div className={cn('card', className)}>

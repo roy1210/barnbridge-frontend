@@ -8,7 +8,7 @@ import { Text } from 'components/custom/typography';
 import useMergeState from 'hooks/useMergeState';
 import { APIProposalState } from 'modules/governance/api';
 
-import { useDAO } from '../../../../components/dao-provider';
+import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useProposal } from '../../providers/ProposalProvider';
 import AbrogationProposalModal from '../abrogation-proposal-modal';
 import AbrogationVoteModal, { VoteAbrogationState } from '../abrogation-vote-modal';

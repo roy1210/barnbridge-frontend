@@ -7,8 +7,6 @@ declare module 'bignumber.js' {
 
     static from(value?: BN.Value): BigNumber | undefined;
 
-    static parse(value: BN.Value): BigNumber;
-
     static sumEach<T = any>(items: T[], predicate: (item: T) => BigNumber | undefined): BigNumber | undefined;
 
     scaleBy(decimals?: number): BigNumber | undefined;

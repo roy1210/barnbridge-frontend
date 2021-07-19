@@ -12,12 +12,14 @@ import Input from 'components/antd/input';
 import Textarea from 'components/antd/textarea';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
+import { executeFetch } from 'hooks/useFetch';
 import useMergeState from 'hooks/useMergeState';
-import { useDaoAPI } from 'modules/governance/api';
+import { APIProposalEntity, useFetchProposal } from 'modules/governance/api';
+import { useDAO } from 'modules/governance/providers/daoProvider';
+import { useConfig } from 'providers/configProvider';
 import { useWallet } from 'wallets/walletProvider';
 
 import CreateProposalActionModal, { CreateProposalActionForm } from '../../components/create-proposal-action-modal';
-import { useDAO } from '../../components/dao-provider';
 import DeleteProposalActionModal from '../../components/delete-proposal-action-modal';
 import ProposalActionCard from '../../components/proposal-action-card';
 
@@ -46,13 +48,18 @@ const InitialState: ProposalCreateViewState = {
 };
 
 const ProposalCreateView: React.FC = () => {
+  const config = useConfig();
   const history = useHistory();
-  const daoAPI = useDaoAPI();
   const daoCtx = useDAO();
   const wallet = useWallet();
 
   const [form] = AntdForm.useForm<NewProposalForm>();
   const [state, setState] = useMergeState<ProposalCreateViewState>(InitialState);
+
+  function fetchProposal(proposalId: number): Promise<APIProposalEntity> {
+    const url = new URL(`/api/governance/proposals/${proposalId}`, config.api.baseUrl);
+    return executeFetch<APIProposalEntity>(url);
+  }
 
   function handleBackClick() {
     history.push('/governance/proposals');
@@ -139,7 +146,7 @@ const ProposalCreateView: React.FC = () => {
         1,
       ); /// TODO: GAS PRICE
 
-      await waitUntil(() => daoAPI.fetchProposal(proposalId), { intervalBetweenAttempts: 3_000, timeout: Infinity });
+      await waitUntil(() => fetchProposal(proposalId), { intervalBetweenAttempts: 3_000, timeout: Infinity });
 
       form.resetFields();
       history.push(`/governance/proposals/${proposalId}`);

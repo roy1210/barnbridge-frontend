@@ -17,10 +17,6 @@ BigNumber.from = (value: BigNumber.Value | undefined): BigNumber | undefined => 
   return bnValue;
 };
 
-BigNumber.parse = (value: BigNumber.Value) => {
-  return new BigNumber(value);
-};
-
 BigNumber.sumEach = <T = any>(items: T[], predicate: (item: T) => BigNumber | undefined): BigNumber | undefined => {
   let sum = BigNumber.ZERO;
 

@@ -8,12 +8,14 @@ import Web3Contract, { createAbiItem } from 'web3/web3Contract';
 import { TokenIconNames } from 'components/custom/icon';
 import { useReload } from 'hooks/useReload';
 import { PolygonNetwork } from 'networks/polygon';
-import { isDevelopmentMode, useConfig } from 'providers/configProvider';
+import { useConfig } from 'providers/configProvider';
 import { useContractManager, useErc20Contract } from 'providers/contractManagerProvider';
 import { useNetwork } from 'providers/networkProvider';
+import TokensProvider from 'providers/tokensProvider';
 import { MainnetHttpsWeb3Provider, useWeb3 } from 'providers/web3Provider';
 import { useWallet } from 'wallets/walletProvider';
 
+import { isDevelopmentMode } from 'utils';
 import { InvariantContext } from 'utils/context';
 
 export enum KnownTokens {
@@ -383,7 +385,7 @@ const KnownTokensProvider: FC = props => {
 
     const [decimals, latestAnswer] = await priceFeedContract.batch([
       { method: 'decimals', transform: Number },
-      { method: 'latestAnswer', transform: BigNumber.parse },
+      { method: 'latestAnswer', transform: BigNumber.from },
     ]);
 
     return latestAnswer.unscaleBy(decimals)!;
@@ -403,7 +405,7 @@ const KnownTokensProvider: FC = props => {
       { method: 'decimals', transform: Number },
       {
         method: 'getReserves',
-        transform: ({ 0: reserve0, 1: reserve1 }) => [BigNumber.parse(reserve0), BigNumber.parse(reserve1)],
+        transform: ({ 0: reserve0, 1: reserve1 }) => [BigNumber.from(reserve0), BigNumber.from(reserve1)],
       },
       { method: 'token0', transform: value => value.toLowerCase() },
     ]);
@@ -430,10 +432,10 @@ const KnownTokensProvider: FC = props => {
 
     const [decimals, totalSupply, [reserve0, reserve1], token0] = await priceFeedContract.batch([
       { method: 'decimals', transform: Number },
-      { method: 'totalSupply', transform: BigNumber.parse },
+      { method: 'totalSupply', transform: BigNumber.from },
       {
         method: 'getReserves',
-        transform: ({ 0: reserve0, 1: reserve1 }) => [BigNumber.parse(reserve0), BigNumber.parse(reserve1)],
+        transform: ({ 0: reserve0, 1: reserve1 }) => [BigNumber.from(reserve0), BigNumber.from(reserve1)],
       },
       { method: 'token0', transform: value => value.toLowerCase() },
     ]);
@@ -653,7 +655,11 @@ const KnownTokensProvider: FC = props => {
     convertTokenInUSD,
   };
 
-  return <Context.Provider value={value}>{children}</Context.Provider>;
+  return (
+    <Context.Provider value={value}>
+      <TokensProvider>{children}</TokensProvider>
+    </Context.Provider>
+  );
 };
 
 export default KnownTokensProvider;

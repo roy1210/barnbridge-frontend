@@ -1,7 +1,7 @@
 import React from 'react';
 
 import useMergeState from 'hooks/useMergeState';
-import { APIVoteEntity, useDaoAPI } from 'modules/governance/api';
+import { APIVoteEntity, useFetchAbrogationVoters } from 'modules/governance/api';
 
 import { useAbrogation } from '../AbrogationProvider';
 
@@ -39,37 +39,9 @@ export function useAbrogationVoters(): AbrogationVotersContextType {
 const AbrogationVotersProvider: React.FC = props => {
   const { children } = props;
 
-  const daoAPI = useDaoAPI();
   const { abrogation } = useAbrogation();
   const [state, setState] = useMergeState<AbrogationVotersProviderState>(InitialState);
-
-  React.useEffect(() => {
-    if (!abrogation) {
-      setState({
-        votes: [],
-        total: 0,
-      });
-      return;
-    }
-
-    setState({ loading: true });
-
-    daoAPI
-      .fetchAbrogationVoters(abrogation.proposalId, state.page, state.pageSize, state.supportFilter)
-      .then(data => {
-        setState({
-          loading: false,
-          votes: data.data,
-          total: data.meta.count,
-        });
-      })
-      .catch(() => {
-        setState({
-          loading: false,
-          votes: [],
-        });
-      });
-  }, [abrogation, state.page, state.supportFilter]);
+  useFetchAbrogationVoters(abrogation?.proposalId ?? 0, state.page, state.supportFilter); /// TODO: DAO
 
   function changeSupportFilter(supportFilter?: boolean) {
     setState({
