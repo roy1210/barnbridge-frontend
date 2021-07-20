@@ -17,10 +17,10 @@ const TreasuryView: FC = () => {
   } = useRouteMatch<RouteParams>();
   const history = useHistory();
 
-  const [activeTab, setActiveTab] = useState<string>(tab);
+  const [activeTab, setActiveTab] = useState(tab);
 
   function handleTabChange(tabKey: string) {
-    setActiveTab(tabKey);
+    // setActiveTab(tabKey);
     history.push(`/governance/treasury/${tabKey}`);
   }
 
@@ -36,17 +36,17 @@ const TreasuryView: FC = () => {
         tabs={[
           {
             id: 'holdings',
+            children: 'Holdings',
             onClick: () => {
               handleTabChange('holdings');
             },
-            children: 'Holdings',
           },
           {
             id: 'fees',
+            children: 'Fees',
             onClick: () => {
               handleTabChange('fees');
             },
-            children: 'Fees',
           },
         ]}
         activeKey={activeTab}
@@ -59,15 +59,8 @@ const TreasuryView: FC = () => {
         }}
       />
       <Switch>
-        <Route path="/governance/treasury/holdings" component={TreasuryHoldings} />
-        <Route
-          path="/governance/treasury/fees"
-          render={() => (
-            <SyAPIProvider>
-              <TreasuryFees />
-            </SyAPIProvider>
-          )}
-        />
+        <Route path="/governance/treasury/holdings" exact component={TreasuryHoldings} />
+        <Route path="/governance/treasury/fees" exact component={TreasuryFees} />
       </Switch>
     </>
   );

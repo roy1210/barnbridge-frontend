@@ -1,206 +1,199 @@
-import cn from 'classnames';
+import { FC, ReactNode } from 'react';
+import classnames from 'classnames';
 import Erc20Contract from 'web3/erc20Contract';
 import { formatToken, formatUSD } from 'web3/utils';
 
 import ExternalLink from 'components/custom/externalLink';
-import Grid from 'components/custom/grid';
 import { Hint, Text } from 'components/custom/typography';
 import { FCx } from 'components/types.tx';
+import { useWeb3Contract } from 'hooks/useContract';
 import { UseLeftTime } from 'hooks/useLeftTime';
 import { useFetchOverview } from 'modules/governance/api';
 import { useDAO } from 'modules/governance/providers/daoProvider';
-import { useKnownTokens } from 'providers/knownTokensProvider';
+import { ProjectToken, useTokens } from 'providers/tokensProvider';
 
 import { getFormattedDuration } from 'utils';
 
-import s from 'modules/governance/views/overview-view/voting-stat-list/s.module.scss';
+import s from './s.module.scss';
+
+type VotingStatCardProps = {
+  label: ReactNode;
+  labelHint?: ReactNode;
+  content: ReactNode;
+  extra?: ReactNode;
+};
+
+const VotingStatCard: FC<VotingStatCardProps> = props => {
+  const { label, labelHint, content, extra } = props;
+
+  return (
+    <div className="card p-24">
+      <div className="flex flow-row row-gap-48">
+        <Hint text={labelHint ? <Text type="p2">{labelHint}</Text> : undefined}>
+          <Text type="lb2" weight="semibold" color="red">
+            {label}
+          </Text>
+        </Hint>
+        <div className="flex flow-row row-gap-4">
+          <div className="flex flow-col align-end">{content}</div>
+          {extra && (
+            <Text type="p1" color="secondary">
+              {extra}
+            </Text>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const VotingStatList: FCx = props => {
   const { className } = props;
 
-  const daoCtx = useDAO();
-  const { projectToken, convertTokenInUSD } = useKnownTokens();
-
+  const { getAmountInUSD } = useTokens();
+  const { daoBarn, daoReward } = useDAO();
   const { data: overview } = useFetchOverview();
 
+  const projectContract = useWeb3Contract(() => new Erc20Contract([], ProjectToken.address), {
+    afterInit: contract => {
+      contract.loadCommon().catch(Error);
+    },
+  });
+
   return (
-    <div className={cn(s.cards, className)}>
-      <div className="card p-24">
-        <Grid flow="row" gap={48}>
-          <Hint
-            text={
-              <Text type="p2">
-                This number shows the amount of $BOND (and their USD value) currently staked in the DAO.
-              </Text>
-            }>
-            <Text type="lb2" weight="semibold" color="red">
-              Bond Staked
+    <div className={classnames(s.cards, className)}>
+      <VotingStatCard
+        label={`${ProjectToken.symbol} Staked`}
+        labelHint={
+          <>This number shows the amount of ${ProjectToken.symbol} (and their USD value) currently staked in the DAO.</>
+        }
+        content={
+          <>
+            <Text type="h2" weight="bold" color="primary" className="mr-4">
+              {formatToken(daoBarn.bondStaked)}
             </Text>
-          </Hint>
-          <Grid flow="row" gap={4}>
-            <Grid flow="col" gap={4} align="end">
+            <Text type="p1" color="secondary">
+              {ProjectToken.symbol}
+            </Text>
+          </>
+        }
+        extra={formatUSD(getAmountInUSD(daoBarn.bondStaked, ProjectToken.symbol))}
+      />
+
+      <VotingStatCard
+        label={`v${ProjectToken.symbol}`}
+        labelHint={
+          <div className="flex flow-row row-gap-8 align-start">
+            <Text type="p2">
+              This number shows the amount of v{ProjectToken.symbol} currently minted. This number may differ from the
+              amount of ${ProjectToken.symbol} staked because of the multiplier mechanic
+            </Text>
+            <ExternalLink
+              href="https://integrations.barnbridge.com/specs/dao-specifications#multiplier-and-voting-power"
+              className="link-blue"
+              style={{ fontWeight: 600 }}>
+              Learn more
+            </ExternalLink>
+          </div>
+        }
+        content={
+          <Text type="h2" weight="bold" color="primary">
+            {formatToken(overview?.totalVbond)}
+          </Text>
+        }
+      />
+
+      <VotingStatCard
+        label="Avg. Lock Time"
+        labelHint={
+          <div className="flex flow-row row-gap-8 align-start">
+            <Text type="p2">
+              This counter shows the average amount of time ${ProjectToken.symbol} stakers locked their deposits in
+              order to take advantage of the voting power bonus.
+            </Text>
+            <ExternalLink
+              href="https://integrations.barnbridge.com/specs/dao-specifications#users-can-lock-bond-for-vbond"
+              className="link-blue"
+              style={{ fontWeight: 600 }}>
+              Learn more
+            </ExternalLink>
+          </div>
+        }
+        content={
+          <Text type="h2" weight="bold" color="primary">
+            {overview?.avgLockTimeSeconds ? getFormattedDuration(overview?.avgLockTimeSeconds) : '-'}
+          </Text>
+        }
+        extra="average time"
+      />
+
+      <VotingStatCard
+        label={`${ProjectToken.symbol} Rewards`}
+        labelHint={
+          <>
+            This number shows the ${ProjectToken.symbol} token rewards distributed so far out of the total of{' '}
+            {formatToken(daoReward.pullFeature?.totalAmount)} that are going to be available for the DAO Staking.
+          </>
+        }
+        content={
+          <UseLeftTime end={(daoReward.pullFeature?.endTs ?? 0) * 1000} delay={5_000}>
+            {() => (
               <Text type="h2" weight="bold" color="primary">
-                {formatToken(daoCtx.daoBarn.bondStaked)}
+                {formatToken(daoReward.bondRewards)}
               </Text>
-              <Text type="p1" color="secondary">
-                {projectToken.symbol}
-              </Text>
-            </Grid>
-            <Text type="p1" color="secondary">
-              {formatUSD(convertTokenInUSD(daoCtx.daoBarn.bondStaked, projectToken.symbol))}
-            </Text>
-          </Grid>
-        </Grid>
-      </div>
+            )}
+          </UseLeftTime>
+        }
+        extra={<>out of {formatToken(daoReward.pullFeature?.totalAmount)}</>}
+      />
 
-      <div className="card p-24">
-        <Grid flow="row" gap={48}>
-          <Hint
-            text={
-              <Grid flow="row" gap={8} align="start">
-                <Text type="p2">
-                  This number shows the amount of vBOND currently minted. This number may differ from the amount of
-                  $BOND staked because of the multiplier mechanic
-                </Text>
-                <ExternalLink
-                  href="https://integrations.barnbridge.com/specs/dao-specifications#multiplier-and-voting-power"
-                  className="link-blue"
-                  style={{ fontWeight: 600 }}>
-                  Learn more
-                </ExternalLink>
-              </Grid>
-            }>
-            <Text type="lb2" weight="semibold" color="red">
-              VBond
+      <VotingStatCard
+        label="Delegated"
+        labelHint={
+          <div className="flex flow-row row-gap-8 align-start">
+            <Text type="p2">
+              This number shows the amount of v{ProjectToken.symbol} that is delegated to other addresses.
             </Text>
-          </Hint>
-          <Grid flow="row" gap={4}>
-            <Text type="h2" weight="bold" color="primary">
-              {formatToken(overview?.totalVbond)}
-            </Text>
-          </Grid>
-        </Grid>
-      </div>
+            <ExternalLink
+              href="https://integrations.barnbridge.com/specs/dao-specifications#users-can-delegate-vbond-to-other-users"
+              className="link-blue"
+              style={{ fontWeight: 600 }}>
+              Learn more
+            </ExternalLink>
+          </div>
+        }
+        content={
+          <Text type="h2" weight="bold" color="primary">
+            {formatToken(overview?.totalDelegatedPower)}
+          </Text>
+        }
+        extra={<>out of {formatToken(projectContract.totalSupply?.unscaleBy(ProjectToken.decimals))}</>}
+      />
 
-      <div className="card p-24">
-        <Grid flow="row" gap={48}>
-          <Hint
-            text={
-              <Grid flow="row" gap={8} align="start">
-                <Text type="p2">
-                  This counter shows the average amount of time $BOND stakers locked their deposits in order to take
-                  advantage of the voting power bonus.
-                </Text>
-                <ExternalLink
-                  href="https://integrations.barnbridge.com/specs/dao-specifications#users-can-lock-bond-for-vbond"
-                  className="link-blue"
-                  style={{ fontWeight: 600 }}>
-                  Learn more
-                </ExternalLink>
-              </Grid>
-            }>
-            <Text type="lb2" weight="semibold" color="red">
-              Avg. Lock Time
-            </Text>
-          </Hint>
-          <Grid flow="row" gap={4}>
-            <Text type="h2" weight="bold" color="primary">
-              {overview?.avgLockTimeSeconds ? getFormattedDuration(overview?.avgLockTimeSeconds) : '-'}
+      <VotingStatCard
+        label="Addresses"
+        labelHint={
+          <>
+            This card shows the number of holders of ${ProjectToken.symbol} and compares it to the number of stakers and
+            voters in the DAO.
+          </>
+        }
+        content={
+          <>
+            <Text type="h2" weight="bold" color="primary" className="mr-4">
+              {overview?.holdersStakingExcluded}
             </Text>
             <Text type="p1" color="secondary">
-              average time
+              holders
             </Text>
-          </Grid>
-        </Grid>
-      </div>
-
-      <div className="card p-24">
-        <Grid flow="row" gap={48}>
-          <Hint
-            text={
-              <Text type="p2">
-                This number shows the $BOND token rewards distributed so far out of the total of{' '}
-                {formatToken(daoCtx.daoReward.pullFeature?.totalAmount)} that are going to be available for the DAO
-                Staking.
-              </Text>
-            }>
-            <Text type="lb2" weight="semibold" color="red">
-              Bond Rewards
-            </Text>
-          </Hint>
-          <Grid flow="row" gap={4}>
-            <UseLeftTime end={(daoCtx.daoReward.pullFeature?.endTs ?? 0) * 1000} delay={5_000}>
-              {() => (
-                <Text type="h2" weight="bold" color="primary">
-                  {formatToken(daoCtx.daoReward.bondRewards)}
-                </Text>
-              )}
-            </UseLeftTime>
-            <Text type="p1" color="secondary">
-              out of {formatToken(daoCtx.daoReward.pullFeature?.totalAmount)}
-            </Text>
-          </Grid>
-        </Grid>
-      </div>
-
-      <div className="card p-24">
-        <Grid flow="row" gap={48}>
-          <Hint
-            text={
-              <Grid flow="row" gap={8} align="start">
-                <Text type="p2">This number shows the amount of vBOND that is delegated to other addresses.</Text>
-                <ExternalLink
-                  href="https://integrations.barnbridge.com/specs/dao-specifications#users-can-delegate-vbond-to-other-users"
-                  className="link-blue"
-                  style={{ fontWeight: 600 }}>
-                  Learn more
-                </ExternalLink>
-              </Grid>
-            }>
-            <Text type="lb2" weight="semibold" color="red">
-              Delegated
-            </Text>
-          </Hint>
-          <Grid flow="row" gap={4}>
-            <Text type="h2" weight="bold" color="primary">
-              {formatToken(overview?.totalDelegatedPower)}
-            </Text>
-            <Text type="p1" color="secondary">
-              out of{' '}
-              {formatToken((projectToken.contract as Erc20Contract).totalSupply?.unscaleBy(projectToken.decimals))}
-            </Text>
-          </Grid>
-        </Grid>
-      </div>
-
-      <div className="card p-24">
-        <Grid flow="row" gap={48}>
-          <Hint
-            text={
-              <Text type="p2">
-                This card shows the number of holders of $BOND and compares it to the number of stakers and voters in
-                the DAO.
-              </Text>
-            }>
-            <Text type="lb2" weight="semibold" color="red">
-              Addresses
-            </Text>
-          </Hint>
-          <Grid flow="row" gap={4}>
-            <Grid flow="col" gap={4} align="end">
-              <Text type="h2" weight="bold" color="primary">
-                {overview?.holdersStakingExcluded}
-              </Text>
-              <Text type="p1" color="secondary">
-                holders
-              </Text>
-            </Grid>
-            <Text type="p1" color="secondary">
-              {overview?.barnUsers} stakers & {overview?.voters} voters
-            </Text>
-          </Grid>
-        </Grid>
-      </div>
+          </>
+        }
+        extra={
+          <>
+            {overview?.barnUsers} stakers & {overview?.voters} voters
+          </>
+        }
+      />
     </div>
   );
 };

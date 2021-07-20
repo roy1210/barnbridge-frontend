@@ -5,10 +5,8 @@ export type SCP<P = {}> = P & {
   style?: CSSProperties;
 };
 
-export type CP<P = {}> = P & {
+export type CP<P = {}> = SCP<P> & {
   children?: ReactNode;
-  className?: string;
-  style?: CSSProperties;
 };
 
 export type FCx<P = {}> = FC<CP<P>>;

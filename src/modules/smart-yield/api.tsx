@@ -1,6 +1,7 @@
 import { FC, createContext, useContext } from 'react';
 import BigNumber from 'bignumber.js';
 
+import { UseFetchReturn, useFetch } from 'hooks/useFetch';
 import { useConfig } from 'providers/configProvider';
 
 import { InvariantContext } from 'utils/context';
@@ -399,6 +400,15 @@ const Context = createContext<SyAPIType>(InvariantContext('SyAPIProvider'));
 
 export function useSyAPI(): SyAPIType {
   return useContext(Context);
+}
+
+export function useFetchSyPools(originator = 'all'): UseFetchReturn<APISYPool[]> {
+  const config = useConfig();
+  const url = new URL(`/api/smartyield/pools?originator=${originator}`, config.api.baseUrl);
+
+  return useFetch(url, {
+    transform: ({ data }) => data,
+  });
 }
 
 const SyAPIProvider: FC = props => {

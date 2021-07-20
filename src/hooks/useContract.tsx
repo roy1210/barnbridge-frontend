@@ -83,7 +83,8 @@ export type UseContractOptions<T extends Web3Contract> = {
 };
 
 export type UseContractFactoryType = {
-  getContract<T extends Web3Contract>(address: string, factory: () => T, options?: UseContractOptions<T>): T;
+  getOrCreateContract<T extends Web3Contract>(address: string, factory?: () => T, options?: UseContractOptions<T>): T;
+  getContract<T extends Web3Contract>(address: string): T | undefined;
   Listeners: ReactElement | null;
 };
 
@@ -144,7 +145,7 @@ export function useContractFactory(options?: UseContractFactoryOptions): UseCont
     };
   }, [updateContracts]);
 
-  const getContract = useCallback(
+  const getOrCreateContract = useCallback(
     (address: string, factory: () => Web3Contract, options?: UseContractOptions<Web3Contract>): Web3Contract => {
       let contract: Web3Contract;
 
@@ -155,6 +156,17 @@ export function useContractFactory(options?: UseContractFactoryOptions): UseCont
       }
 
       return contract;
+    },
+    [createContract],
+  );
+
+  const getContract = useCallback(
+    (address: string): Web3Contract | undefined => {
+      if (!contractsRef.current.has(address)) {
+        return undefined;
+      }
+
+      return contractsRef.current.get(address)!.instance;
     },
     [createContract],
   );
@@ -172,11 +184,12 @@ export function useContractFactory(options?: UseContractFactoryOptions): UseCont
   );
 
   return {
+    getOrCreateContract: getOrCreateContract as any,
     getContract: getContract as any,
     Listeners,
   };
 }
 
 export function useWeb3Contract<T extends Web3Contract>(factory: () => T, options?: UseContractOptions<T>): T {
-  return useContractFactory({ listeners: false }).getContract<T>('$address', factory, options);
+  return useContractFactory({ listeners: false }).getOrCreateContract<T>('$address', factory, options);
 }

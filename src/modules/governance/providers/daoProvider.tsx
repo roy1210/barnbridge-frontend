@@ -53,9 +53,9 @@ const DAOProvider: FC = props => {
   const config = useConfig();
   const wallet = useWallet();
 
-  const { getContract, Listeners } = useContractFactory();
+  const { getOrCreateContract, Listeners } = useContractFactory();
 
-  const daoBarn = getContract(
+  const daoBarn = getOrCreateContract(
     config.contracts.dao?.barn!,
     () => {
       return new DaoBarnContract(config.contracts.dao?.barn!);
@@ -67,7 +67,7 @@ const DAOProvider: FC = props => {
       },
     },
   );
-  const daoGovernance = getContract(
+  const daoGovernance = getOrCreateContract(
     config.contracts.dao?.governance!,
     () => {
       return new DaoGovernanceContract(config.contracts.dao?.governance!);
@@ -79,7 +79,7 @@ const DAOProvider: FC = props => {
       },
     },
   );
-  const daoReward = getContract(
+  const daoReward = getOrCreateContract(
     config.contracts.dao?.reward!,
     () => {
       return new DaoRewardContract(config.contracts.dao?.reward!);

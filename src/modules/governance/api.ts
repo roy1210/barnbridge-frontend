@@ -78,10 +78,10 @@ export type APIVoterEntity = {
   hasActiveDelegation: boolean;
 };
 
-export function useFetchVoters(page: number = 1): UseFetchReturn<PaginatedResult<APIVoterEntity>> {
+export function useFetchVoters(page: number = 1, limit: number = 10): UseFetchReturn<PaginatedResult<APIVoterEntity>> {
   const config = useConfig();
   const query = queryfy({
-    limit: 10,
+    limit,
     page,
   });
   const url = new URL(`/api/governance/voters?${query}`, config.api.baseUrl);
@@ -272,7 +272,9 @@ export function useFetchTreasuryTokens(): UseFetchReturn<APITreasuryToken[]> {
     config.api.baseUrl,
   );
 
-  return useFetch(url);
+  return useFetch(url, {
+    transform: ({ data }) => data,
+  });
 }
 
 export type APITreasuryHistory = {

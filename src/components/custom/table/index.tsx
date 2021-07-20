@@ -1,3 +1,4 @@
+import { FC, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
 
 import { Pagination } from 'components/custom/pagination';
@@ -7,8 +8,8 @@ import { Text } from 'components/custom/typography';
 import s from './s.module.scss';
 
 export type ColumnType<T> = {
-  heading: React.ReactNode;
-  render: (item: T) => React.ReactElement;
+  heading: ReactNode;
+  render: (item: T) => ReactElement;
 };
 
 type Props<T> = {
@@ -71,7 +72,7 @@ type TableFooterType = {
   onChange: (page: number) => void;
 };
 
-export const TableFooter: React.FC<TableFooterType> = ({ children, total, current, pageSize, onChange }) => {
+export const TableFooter: FC<TableFooterType> = ({ children, total, current, pageSize, onChange }) => {
   return (
     <div className="flex p-24">
       <Text type="p2" weight="semibold" color="secondary">

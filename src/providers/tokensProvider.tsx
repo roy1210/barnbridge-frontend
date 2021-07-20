@@ -120,12 +120,15 @@ export const UNIV2: BaseTokenType = {
   icon: 'static/token-uniswap',
 };
 
+export const ProjectToken: BaseTokenType = BOND;
+
 export type TokenType = BaseTokenType & {
   price?: BigNumber;
 };
 
 export type TokensContextType = {
   getToken(symbol?: string): TokenType | undefined;
+  getAmountInUSD(amount: BigNumber | undefined, source: string | undefined): BigNumber | undefined;
 };
 
 const Context = createContext<TokensContextType>(InvariantContext('TokensProvider'));
@@ -283,8 +286,25 @@ const TokensProvider: FC = props => {
     return symbol ? tokensRef.current.get(symbol) : undefined;
   }, []);
 
+  const getAmountInUSD = useCallback((amount: BigNumber | undefined, source: string | undefined):
+    | BigNumber
+    | undefined => {
+    if (!amount || !source) {
+      return undefined;
+    }
+
+    const token = getToken(source);
+
+    if (!token || !token.price) {
+      return undefined;
+    }
+
+    return amount.multipliedBy(token.price);
+  }, []);
+
   const value: TokensContextType = {
     getToken,
+    getAmountInUSD,
   };
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
