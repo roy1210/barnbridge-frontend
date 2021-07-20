@@ -7,6 +7,7 @@ import Web3Contract, { createAbiItem } from 'web3/web3Contract';
 
 import { TokenIconNames } from 'components/custom/icon';
 import { useReload } from 'hooks/useReload';
+import { MumbaiNetwork } from 'networks/mumbai';
 import { PolygonNetwork } from 'networks/polygon';
 import { useConfig } from 'providers/configProvider';
 import { useContractManager, useErc20Contract } from 'providers/contractManagerProvider';
@@ -340,11 +341,47 @@ const KnownTokensProvider: FC = props => {
 
   const getTokenBySymbol = useCallback(
     (symbol: string): TokenMeta | undefined => {
-      if (isDevelopmentMode && symbol === KnownTokens.bbcUSDC) {
-        return tokens.find(token => token.symbol === 'bb_cUSDC');
+      let fSymbol = symbol;
+
+      if (isDevelopmentMode) {
+        if (fSymbol === 'bbcUSDC') {
+          fSymbol = KnownTokens.bbcUSDC;
+        }
       }
 
-      return tokens.find(token => token.symbol === symbol);
+      if (network.activeNetwork === PolygonNetwork || network.activeNetwork === MumbaiNetwork) {
+        switch (fSymbol) {
+          case 'bb_cmUSDC':
+            fSymbol = KnownTokens.bbcUSDC;
+            break;
+          case 'bb_cmDAI':
+            fSymbol = KnownTokens.bbcDAI;
+            break;
+          case 'bb_amUSDC':
+            fSymbol = KnownTokens.bbaUSDC;
+            break;
+          case 'bb_amUSDT':
+            fSymbol = KnownTokens.bbaUSDT;
+            break;
+          case 'bb_amGUSD':
+            fSymbol = KnownTokens.bbaGUSD;
+            break;
+          case 'bb_amDAI':
+            fSymbol = KnownTokens.bbaDAI;
+            break;
+          case 'bb_crmUSDC':
+            fSymbol = KnownTokens.bbcrUSDC;
+            break;
+          case 'bb_crmUSDT':
+            fSymbol = KnownTokens.bbcrUSDT;
+            break;
+          case 'bb_crmDAI':
+            fSymbol = KnownTokens.bbcrDAI;
+            break;
+        }
+      }
+
+      return tokens.find(token => token.symbol === fSymbol);
     },
     [tokens],
   );
