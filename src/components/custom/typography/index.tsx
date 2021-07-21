@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import cn from 'classnames';
 
 import Tooltip from 'components/antd/tooltip';
@@ -15,7 +15,7 @@ export type TextProps = {
   ellipsis?: boolean;
   wrap?: boolean;
   className?: string;
-  style?: Partial<CSSStyleDeclaration>;
+  style?: CSSProperties;
   title?: string;
 };
 

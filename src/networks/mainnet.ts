@@ -38,6 +38,7 @@ export const MainnetConfig: NetworkConfig = {
   },
   dao: {
     activationThreshold: 400000,
+    minThresholdRate: 1,
   },
   tokens: {
     wbtc: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',

@@ -158,9 +158,9 @@ const ProposalCreateView: FC = () => {
   }
 
   useEffect(() => {
-    daoCtx.actions.hasActiveProposal().then(hasActiveProposal => {
-      setState({ hasActiveProposal });
-    });
+    // daoCtx.actions.hasActiveProposal().then(hasActiveProposal => {
+    //   setState({ hasActiveProposal });
+    // });
   }, [wallet.account]);
 
   if (!wallet.initialized) {
@@ -171,13 +171,13 @@ const ProposalCreateView: FC = () => {
     return <Redirect to="/governance/proposals" />;
   }
 
-  const hasCreateRestrictions = state.hasActiveProposal !== undefined && daoCtx.actions.hasThreshold() !== undefined;
+  const hasCreateRestrictions = false; // TODO: state.hasActiveProposal !== undefined && daoCtx.actions.hasThreshold() !== undefined;
 
   if (daoCtx.isActive === undefined || !hasCreateRestrictions) {
     return null;
   }
 
-  const canCreateProposal = state.hasActiveProposal === false && daoCtx.actions.hasThreshold() === true;
+  const canCreateProposal = false; // TODO: state.hasActiveProposal === false && daoCtx.actions.hasThreshold() === true;
 
   if (!daoCtx.isActive || !canCreateProposal) {
     return <Redirect to="/governance/proposals" />;

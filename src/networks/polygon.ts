@@ -35,6 +35,7 @@ export const PolygonConfig: NetworkConfig = {
   },
   dao: {
     activationThreshold: 400000,
+    minThresholdRate: 1,
   },
   tokens: {
     wbtc: '',

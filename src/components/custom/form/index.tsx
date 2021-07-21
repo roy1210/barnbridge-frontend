@@ -17,14 +17,14 @@ import s from './s.module.scss';
 
 const ConditionalWrapper = ({ condition, wrapper, children }) => (condition ? wrapper(children) : children);
 
-type ValiratorCustomRule<V extends FieldValues = FieldValues, P extends keyof V = string> = (
+type ValiratorCustomRule<V extends FieldValues = FieldValues, P extends keyof V = keyof V> = (
   value: V[P],
   exp: any,
   obj: V,
   property: P,
 ) => undefined | boolean | Promise<undefined | boolean>;
 
-type ValiratorRulesType<V extends FieldValues = FieldValues, P extends keyof V = string> = Partial<{
+type ValiratorRulesType<V extends FieldValues = FieldValues, P extends keyof V = keyof V> = Partial<{
   required: boolean | ValiratorCustomRule<V, P>;
   type: 'boolean' | 'number' | 'string' | 'date' | 'object' | 'array' | ValiratorCustomRule<V, P>;
   pattern: string | RegExp | ValiratorCustomRule<V, P>;
@@ -48,7 +48,7 @@ type ValiratorRulesType<V extends FieldValues = FieldValues, P extends keyof V =
   notMatchToProperties: string[] | ValiratorCustomRule<V, P>;
   uniqueItems: boolean | ValiratorCustomRule<V, P>;
   divisibleBy: number | ValiratorCustomRule<V, P>;
-  [customRule: string]: any | ValiratorCustomRule<V, P>;
+  [customRule: string]: ValiratorCustomRule<V, P> | any;
 }>;
 
 type SchemeType<V extends FieldValues = FieldValues> = {
@@ -75,7 +75,7 @@ type InternalContextType<V extends FieldValues = FieldValues> = {
   form: UseFormReturn<V>;
 };
 
-const InternalContext = createContext<InternalContextType>(InvariantContext('Form'));
+const InternalContext = createContext<InternalContextType<FieldValues>>(InvariantContext('Form'));
 
 function VFormEmptyResolver<V extends FieldValues = FieldValues>(values: V): ResolverResult {
   return {
@@ -160,12 +160,12 @@ export function Form<V extends FieldValues = FieldValues>(props: CP<FormProps<V>
     [form.submit],
   );
 
-  const value: InternalContextType = {
-    form: form as any,
-  };
+  const value = {
+    form,
+  } as InternalContextType;
 
   return (
-    <InternalContext.Provider value={value as InternalContextType}>
+    <InternalContext.Provider value={value}>
       <form className={classnames(s.form, className, disabled && s.disabled)} onSubmit={handleSubmit}>
         <fieldset disabled={disabled}>{children}</fieldset>
       </form>

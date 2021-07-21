@@ -9,6 +9,7 @@ import useMergeState from 'hooks/useMergeState';
 import { APIProposalState } from 'modules/governance/api';
 import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useProposal } from 'modules/governance/providers/proposalProvider';
+import { ProjectToken } from 'providers/tokensProvider';
 
 import AbrogationProposalModal from '../abrogation-proposal-modal';
 import AbrogationVoteModal, { VoteAbrogationState } from '../abrogation-vote-modal';
@@ -33,7 +34,7 @@ const ProposalAbrogationCard: FC = () => {
 
   const [state, setState] = useMergeState<ProposalAbrogationCardState>(InitialState);
 
-  const hasThreshold = !!daoCtx.thresholdRate && daoCtx.thresholdRate >= daoCtx.minThreshold;
+  const hasThreshold = !!daoCtx.thresholdRate && daoCtx.thresholdRate >= daoCtx.minThresholdRate;
 
   return (
     <>
@@ -109,8 +110,8 @@ const ProposalAbrogationCard: FC = () => {
                       content={
                         <Text type="p2" weight="semibold">
                           You don’t have enough voting power to create an abrogation proposal. The creator of an
-                          abrogation proposal needs to have a voting power of at least {daoCtx.minThreshold}% of the
-                          amount of $BOND staked in the DAO.
+                          abrogation proposal needs to have a voting power of at least {daoCtx.minThresholdRate}% of the
+                          amount of ${ProjectToken.symbol} staked in the DAO.
                         </Text>
                       }
                       visible={state.showWhyReason}

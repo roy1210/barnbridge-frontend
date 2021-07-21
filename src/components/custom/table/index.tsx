@@ -1,4 +1,4 @@
-import { FC, ReactElement, ReactNode } from 'react';
+import { CSSProperties, FC, ReactElement, ReactNode } from 'react';
 import classNames from 'classnames';
 
 import { Pagination } from 'components/custom/pagination';
@@ -10,6 +10,7 @@ import s from './s.module.scss';
 export type ColumnType<T> = {
   heading: ReactNode;
   render: (item: T) => ReactElement;
+  style?: Partial<CSSProperties>;
 };
 
 type Props<T> = {
@@ -32,7 +33,9 @@ export const Table = <T extends Record<string, any>>({ columns, data, loading, r
         <thead>
           <tr>
             {columns.map((col, dataIdx) => (
-              <th key={dataIdx}>{col.heading}</th>
+              <th key={dataIdx} style={col.style}>
+                {col.heading}
+              </th>
             ))}
           </tr>
         </thead>

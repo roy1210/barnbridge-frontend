@@ -1,44 +1,22 @@
-import { FC, createContext, useContext, useEffect } from 'react';
-import BigNumber from 'bignumber.js';
-import Erc20Contract from 'web3/erc20Contract';
+import { createContext, FC, useContext, useMemo } from 'react';
 
 import { useContractFactory } from 'hooks/useContract';
-import useMergeState from 'hooks/useMergeState';
-import { APIProposalStateId } from 'modules/governance/api';
 import DaoBarnContract from 'modules/governance/contracts/daoBarn';
 import DaoGovernanceContract from 'modules/governance/contracts/daoGovernance';
 import DaoRewardContract from 'modules/governance/contracts/daoReward';
 import { useConfig } from 'providers/configProvider';
-import { useKnownTokens } from 'providers/knownTokensProvider';
-import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';
 
-export type DAOProviderState = {
-  minThreshold: number;
-  isActive?: boolean;
-  bondStaked?: BigNumber;
-  activationRate?: number;
-  thresholdRate?: number;
-};
-
-const InitialState: DAOProviderState = {
-  minThreshold: 1,
-  isActive: undefined,
-  bondStaked: undefined,
-  activationRate: undefined,
-  thresholdRate: undefined,
-};
-
-type DAOContextType = DAOProviderState & {
+type DAOContextType = {
   daoBarn: DaoBarnContract;
   daoGovernance: DaoGovernanceContract;
   daoReward: DaoRewardContract;
-  actions: {
-    activate: () => Promise<void>;
-    hasActiveProposal: () => Promise<boolean>;
-    hasThreshold(): boolean | undefined;
-  };
+  isActive: boolean | undefined;
+  minThresholdRate: number;
+  activationThreshold: number;
+  activationRate: number;
+  thresholdRate: number;
 };
 
 const Context = createContext<DAOContextType>(InvariantContext('DAOProvider'));
@@ -48,10 +26,7 @@ export function useDAO(): DAOContextType {
 }
 
 const DAOProvider: FC = props => {
-  const { children } = props;
-
   const config = useConfig();
-  const wallet = useWallet();
 
   const { getOrCreateContract, Listeners } = useContractFactory();
 
@@ -67,6 +42,7 @@ const DAOProvider: FC = props => {
       },
     },
   );
+
   const daoGovernance = getOrCreateContract(
     config.contracts.dao?.governance!,
     () => {
@@ -79,6 +55,7 @@ const DAOProvider: FC = props => {
       },
     },
   );
+
   const daoReward = getOrCreateContract(
     config.contracts.dao?.reward!,
     () => {
@@ -92,98 +69,43 @@ const DAOProvider: FC = props => {
     },
   );
 
-  const { projectToken } = useKnownTokens();
+  const activationThreshold = config.dao?.activationThreshold ?? 0;
+  const minThresholdRate = config.dao?.minThresholdRate ?? 0;
 
-  const [state, setState] = useMergeState<DAOProviderState>(InitialState);
-
-  useEffect(() => {
-    const bondContract = projectToken.contract as Erc20Contract;
-
-    bondContract.setAccount(wallet.account); // ?
-
-    if (wallet.account) {
-      bondContract.loadAllowance(config.contracts.dao?.barn!).catch(Error);
-    }
-  }, [wallet.account]);
-
-  useEffect(() => {
-    const { isActive } = daoGovernance;
-    const { bondStaked, votingPower } = daoBarn;
-    const activationThreshold = config.dao?.activationThreshold;
-
-    let activationRate: number | undefined;
-
-    if (bondStaked && activationThreshold && activationThreshold > 0) {
-      activationRate = bondStaked.multipliedBy(100).div(activationThreshold).toNumber();
-      activationRate = Math.min(activationRate!, 100);
+  const activationRate = useMemo(() => {
+    if (activationThreshold === 0 || !daoBarn.bondStaked) {
+      return 0;
     }
 
-    let thresholdRate: number | undefined;
+    const rate = daoBarn.bondStaked.div(activationThreshold).multipliedBy(100);
 
-    if (votingPower && bondStaked?.gt(BigNumber.ZERO)) {
-      thresholdRate = votingPower.multipliedBy(100).div(bondStaked).toNumber();
-      thresholdRate = Math.min(thresholdRate!, 100);
+    return Math.min(rate.toNumber(), 100);
+  }, [daoBarn.bondStaked, activationThreshold]);
+
+  const thresholdRate = useMemo(() => {
+    if (!daoBarn.votingPower || !daoBarn.bondStaked?.gt(0)) {
+      return 0;
     }
 
-    setState({
-      isActive,
-      bondStaked,
-      activationRate,
-      thresholdRate,
-    });
-  }, [daoGovernance.isActive, daoBarn.bondStaked, daoBarn.votingPower]);
+    const rate = daoBarn.votingPower.div(daoBarn.bondStaked).multipliedBy(100);
 
-  function activate() {
-    return daoGovernance.activate().then(() => {
-      // daoGovernance.reload(); /// TODO: check
-      // daoBarn.reload(); /// TODO: check
-    });
-  }
+    return Math.min(rate.toNumber(), 100);
+  }, [daoBarn.bondStaked, daoBarn.votingPower]);
 
-  function hasActiveProposal(): Promise<boolean> {
-    if (!wallet.account) {
-      return Promise.resolve(false);
-    }
-
-    return daoGovernance.getLatestProposalIds(wallet.account).then(proposalId => {
-      if (!proposalId) {
-        return Promise.resolve(false);
-      }
-
-      return daoGovernance.getState(proposalId).then(proposalState => {
-        return ![
-          APIProposalStateId.CANCELED,
-          APIProposalStateId.EXECUTED,
-          APIProposalStateId.FAILED,
-          APIProposalStateId.EXPIRED,
-          APIProposalStateId.ABROGATED,
-        ].includes(proposalState as any);
-      });
-    });
-  }
-
-  function hasThreshold(): boolean | undefined {
-    if (state.thresholdRate === undefined) {
-      return undefined;
-    }
-
-    return state.thresholdRate >= state.minThreshold;
-  }
+  const value: DAOContextType = {
+    daoBarn,
+    daoReward,
+    daoGovernance,
+    isActive: daoGovernance.isActive,
+    minThresholdRate,
+    activationThreshold,
+    activationRate,
+    thresholdRate,
+  };
 
   return (
-    <Context.Provider
-      value={{
-        ...state,
-        daoBarn,
-        daoReward,
-        daoGovernance,
-        actions: {
-          activate,
-          hasThreshold,
-          hasActiveProposal,
-        },
-      }}>
-      {children}
+    <Context.Provider value={value}>
+      {props.children}
       {Listeners}
     </Context.Provider>
   );

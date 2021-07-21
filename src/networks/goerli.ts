@@ -31,6 +31,7 @@ export const GoerliConfig: NetworkConfig = {
   },
   dao: {
     activationThreshold: 400000,
+    minThresholdRate: 1,
   },
   tokens: {
     wbtc: '',

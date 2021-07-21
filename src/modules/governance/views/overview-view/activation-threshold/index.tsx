@@ -20,8 +20,8 @@ const ActivationThreshold: FCx = props => {
 
   function handleActivate() {
     setActivating(true);
-    daoCtx.actions
-      .activate()
+    daoCtx.daoGovernance
+      .activate(1) // TODO: GAS PRICE
       .catch(Error)
       .then(() => {
         setActivating(false);
@@ -57,10 +57,10 @@ const ActivationThreshold: FCx = props => {
         <Grid flow="col" gap={8}>
           <Icon name={projectToken.icon!} />
           <Text type="p1" weight="bold" color="primary">
-            {formatToken(daoCtx.bondStaked)}
+            {formatToken(daoCtx.daoBarn.bondStaked)}
           </Text>
           <Text type="p1" weight="semibold" color="secondary">
-            / {formatToken(config.dao?.activationThreshold)} already staked.
+            / {formatToken(daoCtx.activationThreshold)} already staked.
           </Text>
         </Grid>
         {daoCtx.activationRate === 100 && !daoCtx.isActive && (

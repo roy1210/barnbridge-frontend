@@ -25,6 +25,7 @@ export type NetworkConfig = {
   };
   dao?: {
     activationThreshold: number;
+    minThresholdRate: number;
   };
   tokens: Record<
     | 'wbtc'

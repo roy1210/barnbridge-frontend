@@ -1,114 +1,192 @@
-import { FC } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ColumnsType } from 'antd/lib/table/interface';
+import useDebounce from '@rooks/use-debounce';
 import BigNumber from 'bignumber.js';
+import getUnixTime from 'date-fns/getUnixTime';
+import { formatPercent } from 'web3/utils';
 
+import Input from 'components/antd/input';
 import Progress from 'components/antd/progress';
-import Table from 'components/antd/table';
-import Grid from 'components/custom/grid';
+import Icon from 'components/custom/icon';
+import { ColumnType, Table, TableFooter } from 'components/custom/table';
+import { Tabs } from 'components/custom/tabs';
 import { Text } from 'components/custom/typography';
 import { UseLeftTime } from 'hooks/useLeftTime';
-import { LiteProposalEntity, useProposals } from 'modules/governance/providers/proposalsProvider';
+import { APILiteProposalEntity, useFetchProposals } from 'modules/governance/api';
 
 import ProposalStatusTag from '../proposal-status-tag';
 
 import { getFormattedDuration } from 'utils';
 
-const Columns: ColumnsType<LiteProposalEntity> = [
+import s from './s.module.scss';
+
+type ExtendedAPILiteProposalEntity = APILiteProposalEntity & {
+  forRate: BigNumber | undefined;
+  againstRate: BigNumber | undefined;
+  stateTimeEnd: number;
+};
+
+const Columns: ColumnType<ExtendedAPILiteProposalEntity>[] = [
   {
-    title: 'Proposal',
-    width: '70%',
-    render: (_, data: LiteProposalEntity) => (
-      <Grid flow="row" gap={8}>
-        <Link to={`proposals/${data.proposalId}`}>
+    heading: 'Proposal',
+    style: {
+      width: '70%',
+    },
+    render: entity => (
+      <div className="flex flow-row row-gap-8">
+        <Link to={`proposals/${entity.proposalId}`}>
           <Text type="p1" weight="semibold" color="primary">
-            PID-{data.proposalId}: {data.title}
+            PID-{entity.proposalId}: {entity.title}
           </Text>
         </Link>
-        <Grid flow="col" gap={16} align="center">
-          <ProposalStatusTag state={data.state} />
-          <UseLeftTime end={data.stateTimeLeftTs} delay={1_000}>
+        <div className="flex flow-col col-gap-16 align-center">
+          <ProposalStatusTag state={entity.state} />
+          <UseLeftTime end={entity.stateTimeEnd * 1_000} delay={1_000}>
             {leftTime => (
               <Text type="p2" weight="semibold" color="secondary">
-                {leftTime > 0 ? getFormattedDuration(0, data.stateTimeLeftTs) : ''}
+                {leftTime > 0 ? getFormattedDuration(0, entity.stateTimeEnd * 1_000) : ''}
               </Text>
             )}
           </UseLeftTime>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     ),
   },
   {
-    title: 'Votes',
-    width: '30%',
-    render: (_, data: LiteProposalEntity) => {
-      const total = data.forVotes.plus(data.againstVotes);
-
-      let forRate = BigNumber.ZERO;
-      let againstRate = BigNumber.ZERO;
-
-      if (total.gt(BigNumber.ZERO)) {
-        forRate = data.forVotes.multipliedBy(100).div(total);
-        againstRate = data.againstVotes.multipliedBy(100).div(total);
-      }
-
-      return (
-        <Grid flow="row" gap={8}>
-          <Grid gap={24} colsTemplate="minmax(0, 196px) 65px">
-            <Progress
-              percent={forRate.toNumber()}
-              strokeColor="var(--theme-green-color)"
-              trailColor="rgba(var(--theme-green-color-rgb), .16)"
-            />
-            <Text type="p2" weight="semibold" color="secondary" align="right">
-              {forRate.toFormat(2)}%
-            </Text>
-          </Grid>
-          <Grid gap={24} colsTemplate="minmax(0, 196px) 65px">
-            <Progress
-              percent={againstRate.toNumber()}
-              strokeColor="var(--theme-red-color)"
-              trailColor="rgba(var(--theme-red-color-rgb), .16)"
-            />
-            <Text type="p2" weight="semibold" color="secondary" align="right">
-              {againstRate.toFormat(2)}%
-            </Text>
-          </Grid>
-        </Grid>
-      );
+    heading: 'Votes',
+    style: {
+      width: '30%',
     },
+    render: entity => (
+      <div className="flex flow-row row-gap-8">
+        <div className="flex flow-col col-gap-24">
+          <Progress
+            percent={(entity.forRate?.toNumber() ?? 0) * 100}
+            strokeColor="var(--theme-green-color)"
+            trailColor="rgba(var(--theme-green-color-rgb), .16)"
+          />
+          <Text type="p2" weight="semibold" color="secondary" align="right" style={{ width: '64px' }}>
+            {formatPercent(entity.forRate) ?? '-'}
+          </Text>
+        </div>
+        <div className="flex flow-col col-gap-24">
+          <Progress
+            percent={(entity.againstRate?.toNumber() ?? 0) * 100}
+            strokeColor="var(--theme-red-color)"
+            trailColor="rgba(var(--theme-red-color-rgb), .16)"
+          />
+          <Text type="p2" weight="semibold" color="secondary" align="right" style={{ width: '64px' }}>
+            {formatPercent(entity.againstRate) ?? '-'}
+          </Text>
+        </div>
+      </div>
+    ),
   },
 ];
 
 const ProposalsTable: FC = () => {
-  const proposalsCtx = useProposals();
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchFilter, setSearchFilter] = useState('');
 
-  function handlePaginationChange(page: number) {
-    proposalsCtx.changePage(page);
-  }
+  const { data, loading } = useFetchProposals(page, activeTab, searchFilter);
+  const proposals = data?.data ?? [];
+  const proposalsCount = data?.meta.count ?? 0;
+
+  const mappedProposals = useMemo(() => {
+    return proposals.map(proposal => {
+      const total = proposal.forVotes.plus(proposal.againstVotes);
+
+      let forRate: BigNumber | undefined;
+      let againstRate: BigNumber | undefined;
+
+      if (total.gt(BigNumber.ZERO)) {
+        forRate = proposal.forVotes.div(total);
+        againstRate = proposal.againstVotes.div(total);
+      }
+
+      const stateTimeEnd = getUnixTime(Date.now()) + (proposal.stateTimeLeft ?? 0);
+
+      return {
+        ...proposal,
+        forRate,
+        againstRate,
+        stateTimeEnd,
+      };
+    });
+  }, [proposals]);
+
+  const handleSearchChange = useDebounce((value: string) => {
+    setSearchFilter(value);
+    setPage(1);
+  }, 1_000);
 
   return (
-    <Table<LiteProposalEntity>
-      columns={Columns}
-      dataSource={proposalsCtx.proposals}
-      rowKey="proposalId"
-      loading={proposalsCtx.loading}
-      locale={{
-        emptyText: 'No proposals',
-      }}
-      pagination={{
-        total: proposalsCtx.total,
-        current: proposalsCtx.page,
-        pageSize: proposalsCtx.pageSize,
-        position: ['bottomRight'],
-        showTotal: (total: number, [from, to]: [number, number]) => (
-          <Text type="p2" weight="semibold" color="secondary">
+    <div className="card">
+      <div className="card-header flex flow-col col-gap-24 align-center justify-space-between pv-0">
+        <Tabs
+          tabs={[
+            {
+              id: 'all',
+              children: 'All proposals',
+              onClick: () => {
+                setActiveTab('all');
+                setPage(1);
+              },
+            },
+            {
+              id: 'active',
+              children: 'Active',
+              onClick: () => {
+                setActiveTab('active');
+                setPage(1);
+              },
+            },
+            {
+              id: 'executed',
+              children: 'Executed',
+              onClick: () => {
+                setActiveTab('executed');
+                setPage(1);
+              },
+            },
+            {
+              id: 'failed',
+              children: 'Failed',
+              onClick: () => {
+                setActiveTab('failed');
+                setPage(1);
+              },
+            },
+          ]}
+          activeKey={activeTab}
+          onClick={setActiveTab}
+        />
+        <Input
+          className={s.search}
+          prefix={<Icon name="search-outlined" width={16} height={16} />}
+          placeholder="Search proposal"
+          onChange={ev => handleSearchChange(ev.target.value)}
+        />
+      </div>
+      <Table<ExtendedAPILiteProposalEntity>
+        columns={Columns}
+        data={mappedProposals}
+        rowKey={row => String(row.proposalId)}
+        loading={loading}
+        // locale={{
+        //   emptyText: 'No proposals', // TODO: Add support of empty result to Table component
+        // }}
+      />
+      <TableFooter total={proposalsCount} current={page} pageSize={pageSize} onChange={setPage}>
+        {({ total, from, to }) => (
+          <>
             Showing {from} to {to} out of {total} proposals
-          </Text>
-        ),
-        onChange: handlePaginationChange,
-      }}
-    />
+          </>
+        )}
+      </TableFooter>
+    </div>
   );
 };
 
