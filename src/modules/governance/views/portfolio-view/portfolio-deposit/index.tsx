@@ -38,6 +38,9 @@ const PortfolioDeposit: FC = () => {
   const isLocked = (userLockedUntil ?? 0) > Date.now();
 
   const form = useForm<FormType>({
+    defaultValues: {
+      amount: '',
+    },
     validationScheme: {
       amount: {
         rules: {
@@ -179,7 +182,8 @@ const PortfolioDeposit: FC = () => {
                 disabled={isSubmitting}
                 decimals={projectToken.decimals}
                 slider
-                {...field}
+                value={field.value}
+                onChange={field.onChange}
               />
             )}
           </FormItem>

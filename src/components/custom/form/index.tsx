@@ -17,12 +17,53 @@ import s from './s.module.scss';
 
 const ConditionalWrapper = ({ condition, wrapper, children }) => (condition ? wrapper(children) : children);
 
-type SchemeType = {
-  [field: string]: Record<string, any>;
+type ValiratorCustomRule<V extends FieldValues = FieldValues, P extends keyof V = string> = (
+  value: V[P],
+  exp: any,
+  obj: V,
+  property: P,
+) => undefined | boolean | Promise<undefined | boolean>;
+
+type ValiratorRulesType<V extends FieldValues = FieldValues, P extends keyof V = string> = Partial<{
+  required: boolean | ValiratorCustomRule<V, P>;
+  type: 'boolean' | 'number' | 'string' | 'date' | 'object' | 'array' | ValiratorCustomRule<V, P>;
+  pattern: string | RegExp | ValiratorCustomRule<V, P>;
+  format: string | ValiratorCustomRule<V, P>;
+  enum: any | ValiratorCustomRule<V, P>;
+  min: number | ValiratorCustomRule<V, P>;
+  max: number | ValiratorCustomRule<V, P>;
+  minLength: number | ValiratorCustomRule<V, P>;
+  maxLength: number | ValiratorCustomRule<V, P>;
+  minItems: number | ValiratorCustomRule<V, P>;
+  maxItems: number | ValiratorCustomRule<V, P>;
+  lessThan: any | ValiratorCustomRule<V, P>;
+  lessThanProperty: string | ValiratorCustomRule<V, P>;
+  moreThan: any | ValiratorCustomRule<V, P>;
+  moreThanProperty: string | ValiratorCustomRule<V, P>;
+  matchTo: any | ValiratorCustomRule<V, P>;
+  matchToProperty: string | ValiratorCustomRule<V, P>;
+  matchToProperties: string[] | ValiratorCustomRule<V, P>;
+  notMatchTo: any | ValiratorCustomRule<V, P>;
+  notMatchToProperty: string | ValiratorCustomRule<V, P>;
+  notMatchToProperties: string[] | ValiratorCustomRule<V, P>;
+  uniqueItems: boolean | ValiratorCustomRule<V, P>;
+  divisibleBy: number | ValiratorCustomRule<V, P>;
+  [customRule: string]: any | ValiratorCustomRule<V, P>;
+}>;
+
+type SchemeType<V extends FieldValues = FieldValues> = {
+  [P in keyof V]?: {
+    rules: ValiratorRulesType<V, P>;
+    messages: {
+      [M in keyof ValiratorRulesType<V, P>]:
+        | string
+        | ((actual: any, expected: any, property: string, obj: V) => string);
+    };
+  };
 };
 
-type FormContext = {
-  scheme?: SchemeType;
+type FormContext<V extends FieldValues = FieldValues> = {
+  scheme?: SchemeType<V>;
 };
 
 type UseFormReturn<V extends FieldValues = FieldValues> = rhUseFormReturn<V> & {
@@ -36,14 +77,17 @@ type InternalContextType<V extends FieldValues = FieldValues> = {
 
 const InternalContext = createContext<InternalContextType>(InvariantContext('Form'));
 
-function VFormEmptyResolver(values: FieldValues): ResolverResult {
+function VFormEmptyResolver<V extends FieldValues = FieldValues>(values: V): ResolverResult {
   return {
     values,
     errors: {},
   };
 }
 
-export async function VFormValidationResolver(values: FieldValues, context?: FormContext): Promise<ResolverResult> {
+export async function VFormValidationResolver<V extends FieldValues = FieldValues>(
+  values: V,
+  context?: FormContext<V>,
+): Promise<ResolverResult<V>> {
   const validationResult = await validate(context?.scheme, values);
   const errors = validationResult.getErrors();
 
@@ -60,12 +104,12 @@ export async function VFormValidationResolver(values: FieldValues, context?: For
       }
 
       return res;
-    }, {} as Record<string, any>),
+    }, {}),
   };
 }
 
 type useFormProps<V extends FieldValues = FieldValues> = {
-  validationScheme?: SchemeType;
+  validationScheme?: SchemeType<V>;
   defaultValues?: DefaultValues<V>;
   onSubmit: (values: UnpackNestedValue<V>) => any | Promise<any>;
 };
@@ -73,9 +117,9 @@ type useFormProps<V extends FieldValues = FieldValues> = {
 export function useForm<V extends FieldValues = FieldValues>(props: useFormProps<V>): UseFormReturn<V> {
   const { validationScheme, defaultValues, onSubmit } = props;
 
-  const resolver = (validationScheme ? VFormValidationResolver : VFormEmptyResolver) as Resolver<V, FormContext>;
+  const resolver = (validationScheme ? VFormValidationResolver : VFormEmptyResolver) as Resolver<V, FormContext<V>>;
 
-  const rhForm = rhUseForm<V, FormContext>({
+  const rhForm = rhUseForm<V, FormContext<V>>({
     mode: 'all',
     resolver,
     context: {

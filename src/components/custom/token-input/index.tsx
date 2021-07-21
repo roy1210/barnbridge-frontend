@@ -10,7 +10,7 @@ import s from './s.module.scss';
 
 export type TokenInputProps = AntdInputProps;
 
-export const TokenInput: FC<TokenInputProps> = forwardRef<HTMLInputElement, TokenInputProps>(props => {
+export const TokenInput: FC<TokenInputProps> = forwardRef<HTMLInputElement, TokenInputProps>((props, ref) => {
   const { className, value, ...inputProps } = props;
 
   const addonBefore = React.useMemo(

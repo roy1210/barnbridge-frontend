@@ -33,6 +33,9 @@ const PortfolioWithdraw: FC = () => {
   const hasStakedBalance = stakedBalance?.gt(BigNumber.ZERO);
 
   const form = useForm<FormType>({
+    defaultValues: {
+      amount: '',
+    },
     validationScheme: {
       amount: {
         rules: {
@@ -147,7 +150,8 @@ const PortfolioWithdraw: FC = () => {
                 disabled={isSubmitting}
                 decimals={projectToken.decimals}
                 slider
-                {...field}
+                value={field.value}
+                onChange={field.onChange}
               />
             )}
           </FormItem>

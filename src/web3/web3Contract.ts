@@ -231,6 +231,7 @@ class Web3Contract {
     return new Promise((resolve, reject) => {
       const req = contractMethod(...methodArgs).call.request(callArgs, (err: Error, value: string) => {
         if (err) {
+          console.error(`Web3Contract > Error in '${method}' method execution.`, this);
           console.error(err);
           return reject(err);
         }
