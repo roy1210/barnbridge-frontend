@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { isMobile } from 'react-device-detect';
 
 import { Text } from 'components/custom/typography';
@@ -20,7 +20,7 @@ const PoolsView: FC = () => {
   const walletCtx = useWallet();
 
   return (
-    <>
+    <SyAPIProvider>
       {!isMobile && walletCtx.isActive && <PoolRewards />}
       <div className="content-container-fix content-container">
         <SyAPIProvider>
@@ -43,7 +43,7 @@ const PoolsView: FC = () => {
         <PoolChart className="mb-32" />
         <PoolsTransactions />
       </div>
-    </>
+    </SyAPIProvider>
   );
 };
 
