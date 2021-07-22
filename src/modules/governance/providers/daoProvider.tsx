@@ -1,4 +1,4 @@
-import { createContext, FC, useContext, useMemo } from 'react';
+import { FC, createContext, useContext, useMemo } from 'react';
 
 import { useContractFactory } from 'hooks/useContract';
 import DaoBarnContract from 'modules/governance/contracts/daoBarn';
@@ -7,6 +7,8 @@ import DaoRewardContract from 'modules/governance/contracts/daoReward';
 import { useConfig } from 'providers/configProvider';
 
 import { InvariantContext } from 'utils/context';
+import Web3Contract from 'web3/web3Contract';
+import { useReload } from 'hooks/useReload';
 
 type DAOContextType = {
   daoBarn: DaoBarnContract;
@@ -27,6 +29,7 @@ export function useDAO(): DAOContextType {
 
 const DAOProvider: FC = props => {
   const config = useConfig();
+  const [reload, version] = useReload();
 
   const { getOrCreateContract, Listeners } = useContractFactory();
 
@@ -37,6 +40,7 @@ const DAOProvider: FC = props => {
     },
     {
       afterInit: contract => {
+        contract.on(Web3Contract.UPDATE_DATA, reload);
         contract.loadCommonData().catch(Error);
         contract.loadUserData().catch(Error);
       },
@@ -50,6 +54,7 @@ const DAOProvider: FC = props => {
     },
     {
       afterInit: contract => {
+        contract.on(Web3Contract.UPDATE_DATA, reload);
         contract.loadCommonData().catch(Error);
         contract.loadUserData().catch(Error);
       },
@@ -63,6 +68,7 @@ const DAOProvider: FC = props => {
     },
     {
       afterInit: contract => {
+        contract.on(Web3Contract.UPDATE_DATA, reload);
         contract.loadCommonData().catch(Error);
         contract.loadUserData().catch(Error);
       },
@@ -80,7 +86,7 @@ const DAOProvider: FC = props => {
     const rate = daoBarn.bondStaked.div(activationThreshold).multipliedBy(100);
 
     return Math.min(rate.toNumber(), 100);
-  }, [daoBarn.bondStaked, activationThreshold]);
+  }, [daoBarn.bondStaked, activationThreshold, version]);
 
   const thresholdRate = useMemo(() => {
     if (!daoBarn.votingPower || !daoBarn.bondStaked?.gt(0)) {
@@ -90,7 +96,7 @@ const DAOProvider: FC = props => {
     const rate = daoBarn.votingPower.div(daoBarn.bondStaked).multipliedBy(100);
 
     return Math.min(rate.toNumber(), 100);
-  }, [daoBarn.bondStaked, daoBarn.votingPower]);
+  }, [daoBarn.bondStaked, daoBarn.votingPower, version]);
 
   const value: DAOContextType = {
     daoBarn,

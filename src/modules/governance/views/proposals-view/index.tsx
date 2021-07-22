@@ -30,14 +30,13 @@ const ProposalsView: FC = () => {
       }
 
       const latestProposalId = await daoGovernance.getLatestProposalIds(wallet.account);
-      console.log({ latestProposalId });
 
       if (!latestProposalId) {
         return;
       }
 
       const latestProposalState = await daoGovernance.getState(latestProposalId);
-      console.log({ latestProposalState });
+
       if (!latestProposalState) {
         return;
       }

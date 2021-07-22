@@ -1,23 +1,15 @@
-import { FC, useEffect } from 'react';
-import AntdForm, { FormInstance } from 'antd/lib/form';
-import AntdNotification from 'antd/lib/notification';
-import AntdSpin from 'antd/lib/spin';
+import { FC, useState } from 'react';
 import AntdSwitch from 'antd/lib/switch';
 import { AbiFunctionFragment, AbiInterface } from 'web3/abiInterface';
 
 import Alert from 'components/antd/alert';
-import Form from 'components/antd/form';
 import Input from 'components/antd/input';
 import Modal, { ModalProps } from 'components/antd/modal';
-import Select from 'components/antd/select';
-import Textarea from 'components/antd/textarea';
 import YesNoSelector from 'components/antd/yes-no-selector';
+import { Form, FormItem, useForm } from 'components/custom/form';
 import Grid from 'components/custom/grid';
+import { Spinner } from 'components/custom/spinner';
 import { Hint, Text } from 'components/custom/typography';
-import useMergeState from 'hooks/useMergeState';
-import { useConfig } from 'providers/configProvider';
-import { useNetwork } from 'providers/networkProvider';
-import { useWeb3 } from 'providers/web3Provider';
 
 import AddZerosPopup from '../add-zeros-popup';
 import SimulatedProposalActionModal from '../simulated-proposal-action-modal';
@@ -81,17 +73,62 @@ type Props = ModalProps & {
   onSubmit: (values: CreateProposalActionForm) => void;
 };
 
-const CreateProposalActionModal: FC<Props> = props => {
-  const { edit = false, initialValues = InitialFormValues } = props;
+type FormType = {
+  targetAddress: string;
+  isProxyAddress: boolean;
+  implementationAddress: string;
+  addValueAttribute?: boolean;
+  actionValue: string;
+  addFunctionCall?: boolean;
+  abiLoading: boolean;
+  abiInterface?: AbiInterface;
+  functionSignature?: string;
+  functionMeta?: AbiFunctionFragment;
+  functionParams: Record<string, any>;
+  functionStrParams: string;
+  functionEncodedParams: string;
+};
 
-  const { activeNetwork } = useNetwork();
-  const config = useConfig();
-  const web3 = useWeb3();
-  const [form] = AntdForm.useForm<CreateProposalActionForm>();
-  const [state, setState] = useMergeState<CreateProposalActionModalState>(InitialState);
+const CreateProposalActionModal: FC<Props> = props => {
+  const { edit = false } = props;
+
+  const form = useForm<FormType>({
+    defaultValues: {
+      targetAddress: '',
+      isProxyAddress: false,
+      implementationAddress: '',
+      addValueAttribute: undefined,
+    },
+    validationScheme: {
+      targetAddress: {
+        rules: {
+          required: true,
+        },
+        messages: {
+          required: 'Value is required.',
+        },
+      },
+    },
+    onSubmit: async values => {
+    },
+  });
+
+  const [isSubmitting, setSubmitting] = useState(false);
+  const [isSimulatedActionModal, showSimulatedActionModal] = useState(false);
+  const [simulatedAction, setSimulatedAction] = useState({
+    targetAddress: '',
+    functionSignature: '',
+    functionEncodedParams: '',
+  });
+
+  const { formState, watch } = form;
+  // @ts-ignore
+  const isProxyAddress = watch('isProxyAddress');
+  const addValueAttribute = watch('addValueAttribute');
+  const addFunctionCall = watch('addFunctionCall');
 
   function loadAbiInterface(address: string) {
-    form.setFieldsValue({
+    /*form.setFieldsValue({
       abiLoading: true,
     });
 
@@ -116,11 +153,11 @@ const CreateProposalActionModal: FC<Props> = props => {
         form.setFieldsValue({
           abiLoading: false,
         });
-      });
+      });*/
   }
 
   function handleFormValuesChange(values: Partial<CreateProposalActionForm>, allValues: CreateProposalActionForm) {
-    const {
+    /*const {
       targetAddress,
       isProxyAddress,
       implementationAddress,
@@ -219,11 +256,11 @@ const CreateProposalActionModal: FC<Props> = props => {
 
     setState({
       formDirty: form.isFieldsTouched(),
-    });
+    });*/
   }
 
   async function handleSubmit(values: CreateProposalActionForm) {
-    const existsSimilar = props.actions.some(action => {
+    /*const existsSimilar = props.actions.some(action => {
       return (
         action !== values &&
         action.addFunctionCall &&
@@ -287,11 +324,11 @@ const CreateProposalActionModal: FC<Props> = props => {
 
     if (cancel) {
       props.onCancel?.();
-    }
+    }*/
   }
 
   function handleSimulatedAction(answer: boolean) {
-    if (answer) {
+    /*if (answer) {
       state.simulationResolve?.();
     } else {
       state.simulationReject?.();
@@ -301,20 +338,13 @@ const CreateProposalActionModal: FC<Props> = props => {
       showSimulatedActionModal: false,
       simulationResolve: undefined,
       simulationReject: undefined,
-    });
+    });*/
   }
-
-  useEffect(() => {
-    if (initialValues !== InitialFormValues) {
-      form.resetFields();
-      form.setFieldsValue(initialValues);
-    }
-  }, [initialValues]);
 
   return (
     <Modal
       className={s.component}
-      confirmClose={state.formDirty}
+      confirmClose={formState.isDirty}
       confirmText="Are you sure you want to close this form?"
       {...props}>
       <div className={s.wrap}>
@@ -322,247 +352,198 @@ const CreateProposalActionModal: FC<Props> = props => {
           {edit ? 'Edit action' : 'Add new action'}
         </Text>
 
-        <Form
-          className={s.form}
-          form={form}
-          initialValues={{}}
-          validateTrigger={['onSubmit', 'onChange']}
-          onValuesChange={handleFormValuesChange}
-          onFinish={handleSubmit}>
-          <Form.Item
+        <Form form={form}>
+          <FormItem
             name="targetAddress"
             label="Target address"
-            hint="This is the address to which the transaction will be sent."
-            rules={[{ required: true, message: 'Required' }]}>
-            <Input disabled={state.submitting} />
-          </Form.Item>
+            labelProps={{
+              hint: 'This is the address to which the transaction will be sent.',
+            }}>
+            {({ field }) => <Input value={field.value} onChange={field.onChange} />}
+          </FormItem>
 
           <Grid flow="col" align="center" justify="space-between">
-            <Hint text="In case you are using a proxy address as the target, please specify the address where the function implementation is found.">
+            <Hint
+              text="In case you are using a proxy address as the target, please specify the address where the function implementation is found.">
               <Text type="small" weight="semibold" color="secondary">
                 Is this a proxy address?
               </Text>
             </Hint>
-            <Form.Item name="isProxyAddress" noStyle>
-              <AntdSwitch disabled={state.submitting} />
-            </Form.Item>
+            <FormItem name="isProxyAddress">
+              {({ field }) => <AntdSwitch checked={field.value} onChange={field.onChange} />}
+            </FormItem>
           </Grid>
 
-          <Form.Item dependencies={['isProxyAddress']} noStyle>
-            {({ getFieldsValue }) => {
-              const { isProxyAddress } = getFieldsValue();
+          {isProxyAddress && (
+            <FormItem name="implementationAddress">
+              {({ field }) => (
+                <Input placeholder="Implementation address" value={field.value} onChange={field.onChange} />
+              )}
+            </FormItem>
+          )}
 
-              return (
-                isProxyAddress === true && (
-                  <Form.Item
-                    name="implementationAddress"
-                    hidden={!isProxyAddress}
-                    preserve={false}
-                    rules={[{ required: true, message: 'Required' }]}>
-                    <Input placeholder="Implementation address" disabled={state.submitting} />
-                  </Form.Item>
-                )
-              );
-            }}
-          </Form.Item>
-
-          <Form.Item
+          <FormItem
             name="addValueAttribute"
             label="Add a value attribute to your action?"
-            hint="This field allows you to send some ETH along with your transaction."
-            rules={[{ required: true, message: 'Required' }]}>
-            <YesNoSelector disabled={state.submitting} />
-          </Form.Item>
+            labelProps={{
+              hint: 'This field allows you to send some ETH along with your transaction.',
+            }}>
+            {({ field }) => <YesNoSelector value={field.value} onChange={field.onChange} />}
+          </FormItem>
 
-          <Form.Item shouldUpdate={prevValue => prevValue.addValueAttribute === true} noStyle>
-            {({ getFieldsValue }) => {
-              const { addValueAttribute, actionValue } = getFieldsValue();
-              const max = 78 - (actionValue?.length ?? 0);
+          {addValueAttribute && (
+            <FormItem
+              name="actionValue"
+              label={
+                <Grid flow="col" gap={8}>
+                  <Text type="small" weight="semibold" color="secondary">
+                    Action Value
+                  </Text>
+                  <AddZerosPopup
+                    max={78}
+                    onAdd={value => {
+                      /*const { actionValue: prevActionValue } = getFieldsValue();
 
-              return (
-                addValueAttribute === true && (
-                  <Form.Item
-                    name="actionValue"
-                    label={
-                      <Grid flow="col" gap={8}>
-                        <Text type="small" weight="semibold" color="secondary">
-                          Action Value
-                        </Text>
-                        <AddZerosPopup
-                          max={max}
-                          onAdd={value => {
-                            const { actionValue: prevActionValue } = getFieldsValue();
+                      if (prevActionValue) {
+                        const zeros = '0'.repeat(value);
+                        form.setFieldsValue({
+                          actionValue: `${prevActionValue}${zeros}`,
+                        });
+                      }*/
+                    }}
+                  />
+                </Grid>
+              }>
+              {({ field }) => <Input value={field.value} onChange={field.onChange} />}
+            </FormItem>
+          )}
 
-                            if (prevActionValue) {
-                              const zeros = '0'.repeat(value);
-                              form.setFieldsValue({
-                                actionValue: `${prevActionValue}${zeros}`,
-                              });
-                            }
-                          }}
-                        />
-                      </Grid>
-                    }
-                    preserve={false}
-                    rules={[{ required: true, message: 'Required' }]}>
-                    <Input disabled={state.submitting} />
-                  </Form.Item>
-                )
-              );
-            }}
-          </Form.Item>
-
-          <Form.Item
+          <FormItem
             name="addFunctionCall"
             label="Add a function call to your action?"
-            hint="This field allows you to call a function on a smart contract."
-            rules={[{ required: true, message: 'Required' }]}>
-            <YesNoSelector disabled={state.submitting} />
-          </Form.Item>
+            labelProps={{
+              hint: 'This field allows you to call a function on a smart contract.',
+            }}>
+            {({ field }) => <YesNoSelector value={field.value} onChange={field.onChange} />}
+          </FormItem>
 
-          <Form.Item name="abiLoading" preserve={false} hidden noStyle />
-          <Form.Item name="abiInterface" preserve={false} hidden noStyle />
-          <Form.Item name="functionMeta" preserve={false} hidden noStyle />
-          <Form.Item name="functionStrParams" preserve={false} hidden noStyle />
-          <Form.Item name="functionEncodedParams" preserve={false} hidden noStyle />
+          {(() => {
+            if (addFunctionCall !== true) {
+              return null;
+            }
+            return null;
+            /*const functionOptions =
+              abiInterface?.writableFunctions.map(fn => ({
+                label: fn.format(),
+                value: fn.format(),
+              })) ?? [];
 
-          <Form.Item
-            shouldUpdate={(prevValues: CreateProposalActionForm) => prevValues.addFunctionCall === true}
-            noStyle>
-            {({ getFieldsValue }: FormInstance<CreateProposalActionForm>) => {
-              const {
-                targetAddress,
-                addFunctionCall,
-                abiLoading,
-                abiInterface,
-                functionMeta,
-                functionParams,
-                functionStrParams,
-                functionEncodedParams,
-              } = getFieldsValue();
-
-              if (addFunctionCall !== true) {
-                return null;
-              }
-
-              const functionOptions =
-                abiInterface?.writableFunctions.map(fn => ({
-                  label: fn.format(),
-                  value: fn.format(),
-                })) ?? [];
-
-              return (
-                <Grid flow="row" gap={32}>
-                  <Form.Item
-                    name="functionSignature"
-                    label="Select function"
-                    preserve={false}
-                    rules={[{ required: true, message: 'Required' }]}>
-                    <Select loading={abiLoading} disabled={state.submitting} options={functionOptions} fixScroll />
-                  </Form.Item>
-
-                  {functionMeta && (
-                    <Grid flow="row" gap={32}>
-                      {functionMeta.inputs.map(input => (
-                        <Form.Item
-                          key={`${functionMeta?.format()}:${input.name}`}
-                          name={['functionParams', input.name]}
-                          label={
-                            <Grid flow="col" gap={8}>
-                              <Text type="small" weight="semibold" color="secondary">
-                                {input.name} ({input.type})
-                              </Text>
-                              {/(u?int\d+)/g.test(input.type) && (
-                                <AddZerosPopup
-                                  onAdd={value => {
-                                    const prevActionValue = functionParams[input.name];
-
-                                    if (prevActionValue) {
-                                      const zeros = '0'.repeat(value);
-                                      functionParams[input.name] = `${prevActionValue}${zeros}`;
-
-                                      const paramsValues = Object.values(functionParams);
-                                      const encodedParams = AbiInterface.encodeFunctionData(functionMeta, paramsValues);
-
-                                      form.setFieldsValue({
-                                        functionParams,
-                                        functionEncodedParams: encodedParams,
-                                      });
-                                    }
-                                  }}
-                                />
-                              )}
-                            </Grid>
-                          }
-                          preserve={false}
-                          rules={[{ required: true, message: 'Required' }]}>
-                          <Input disabled={state.submitting} placeholder={`${input.name} (${input.type})`} />
-                        </Form.Item>
-                      ))}
-
-                      <Form.Item label={`Function type: ${functionMeta.name}`}>
-                        <Textarea className={s.textarea} rows={5} value={functionStrParams} disabled />
-                      </Form.Item>
-
-                      <Form.Item label="Hex data">
-                        <Textarea
-                          className={s.textarea}
-                          rows={5}
-                          placeholder="Fill in the arguments above"
-                          value={functionEncodedParams}
-                          disabled
-                        />
-                      </Form.Item>
-                    </Grid>
-                  )}
-
-                  {targetAddress && addFunctionCall && !abiLoading && !abiInterface && (
-                    <Alert
-                      type="error"
-                      message="The target address you entered is not a validated contract address. Please check the information you entered and try again"
+            return (
+              <Grid flow="row" gap={32}>
+                <FormItem name="functionSignature" label="Select function">
+                  {({ field }) => (
+                    <Select
+                      loading={abiLoading}
+                      options={functionOptions}
+                      fixScroll
+                      value={field.value}
+                      onChange={field.onChange}
                     />
                   )}
-                </Grid>
-              );
-            }}
-          </Form.Item>
+                </FormItem>
 
-          <Form.Item dependencies={['addValueAttribute', 'addFunctionCall']} noStyle>
-            {({ getFieldsValue }) => {
-              const { addValueAttribute, addFunctionCall } = getFieldsValue();
+                {functionMeta && (
+                  <Grid flow="row" gap={32}>
+                    {functionMeta.inputs.map(input => (
+                      <FormItem
+                        key={`${functionMeta?.format()}:${input.name}`}
+                        name={`functionParams[${input.name}]`}
+                        label={
+                          <Grid flow="col" gap={8}>
+                            <Text type="small" weight="semibold" color="secondary">
+                              {input.name} ({input.type})
+                            </Text>
+                            {/(u?int\d+)/g.test(input.type) && (
+                              <AddZerosPopup
+                                onAdd={value => {
+                                  const prevActionValue = functionParams[input.name];
 
-              return (
-                addValueAttribute === false &&
-                addFunctionCall === false && (
+                                  if (prevActionValue) {
+                                    const zeros = '0'.repeat(value);
+                                    functionParams[input.name] = `${prevActionValue}${zeros}`;
+
+                                    const paramsValues = Object.values(functionParams);
+                                    const encodedParams = AbiInterface.encodeFunctionData(functionMeta, paramsValues);
+
+                                    /!*form.setFieldsValue({
+                                      functionParams,
+                                      functionEncodedParams: encodedParams,
+                                    });*!/
+                                  }
+                                }}
+                              />
+                            )}
+                          </Grid>
+                        }>
+                        {({ field }) => (
+                          <Input
+                            placeholder={`${input.name} (${input.type})`}
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        )}
+                      </FormItem>
+                    ))}
+
+                    <FieldLabel label={`Function type: ${functionMeta.name}`}>
+                      <Textarea className={s.textarea} rows={5} value={functionStrParams} disabled />
+                    </FieldLabel>
+
+                    <FieldLabel label="Hex data">
+                      <Textarea
+                        className={s.textarea}
+                        rows={5}
+                        placeholder="Fill in the arguments above"
+                        value={functionEncodedParams}
+                        disabled
+                      />
+                    </FieldLabel>
+                  </Grid>
+                )}
+
+                {targetAddress && addFunctionCall && !abiLoading && !abiInterface && (
                   <Alert
                     type="error"
-                    message="You need to provide at least one: a value attribute or a function call to your action"
+                    message="The target address you entered is not a validated contract address. Please check the information you entered and try again"
                   />
-                )
-              );
-            }}
-          </Form.Item>
+                )}
+              </Grid>
+            );*/
+          })()}
+
+          {!addValueAttribute && !addFunctionCall && (
+            <Alert
+              type="error"
+              message="You need to provide at least one: a value attribute or a function call to your action"
+            />
+          )}
 
           <div className={s.actions}>
-            <button
-              type="button"
-              disabled={state.submitting}
-              onClick={props.onCancel}
-              className="button-ghost-monochrome">
+            <button type="button" className="button-ghost-monochrome" onClick={props.onCancel}>
               {edit ? 'Cancel Changes' : 'Cancel'}
             </button>
-            <button className="button-primary" type="submit">
-              {state.submitting && <AntdSpin spinning />}
+            <button type="submit" className="button-primary">
+              {isSubmitting && <Spinner className="mr-8" />}
               {edit ? 'Save Changes' : 'Add Action'}
             </button>
           </div>
         </Form>
 
-        {state.showSimulatedActionModal && state.simulatedAction && (
+        {isSimulatedActionModal && simulatedAction && (
           <SimulatedProposalActionModal
-            targetAddress={state.simulatedAction.targetAddress}
-            functionSignature={state.simulatedAction.functionSignature}
-            functionEncodedParams={state.simulatedAction.functionEncodedParams}
+            targetAddress={simulatedAction.targetAddress}
+            functionSignature={simulatedAction.functionSignature}
+            functionEncodedParams={simulatedAction.functionEncodedParams}
             onOk={() => handleSimulatedAction(true)}
             onCancel={() => handleSimulatedAction(false)}
           />

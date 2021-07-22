@@ -101,8 +101,14 @@ export type UseContractFactoryOptions = {
 
 export function useContractFactory(options?: UseContractFactoryOptions): UseContractFactoryType {
   const { listeners = true } = options ?? {};
-  const { account, initialized, event: walletEvent } = useWallet();
+  const { account, event: walletEvent } = useWallet();
   const { activeProvider, event: web3Event } = useWeb3();
+
+  const accountRef = useRef(account);
+  accountRef.current = account;
+
+  const activeProviderRef = useRef(activeProvider);
+  activeProviderRef.current = activeProvider;
 
   const contractsRef = useRef<Map<string, CachedContractType>>(new Map());
   const [reload, version] = useReload();
@@ -110,9 +116,9 @@ export function useContractFactory(options?: UseContractFactoryOptions): UseCont
   const createContract = useCallback(
     (address: string, factory: () => Web3Contract, options?: UseContractOptions<Web3Contract>): Web3Contract => {
       const contract = factory();
-      contract.setProvider(activeProvider);
-      contract.setCallProvider(activeProvider);
-      contract.setAccount(account);
+      contract.setProvider(activeProviderRef.current);
+      contract.setCallProvider(activeProviderRef.current);
+      contract.setAccount(accountRef.current);
 
       contractsRef.current.set(address, {
         address,
@@ -126,7 +132,7 @@ export function useContractFactory(options?: UseContractFactoryOptions): UseCont
 
       return contract;
     },
-    [activeProvider, account, initialized],
+    [activeProvider, account, reload],
   );
 
   const updateContracts = useDebounce(() => {

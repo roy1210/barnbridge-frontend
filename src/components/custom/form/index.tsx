@@ -233,8 +233,8 @@ export type FormItemRender = {
 
 export type FormItemProps = {
   name: string;
-  label?: string;
-  labelProps?: FieldLabelProps;
+  label?: ReactNode;
+  labelProps?: Partial<FieldLabelProps>;
   showError?: boolean;
   children: (field: FormItemRender) => ReactElement;
 };

@@ -1,3 +1,5 @@
+import { Context, useContext } from 'react';
+
 export function InvariantContext<T>(contextName: string): T {
   return new Proxy(
     {},
@@ -8,4 +10,14 @@ export function InvariantContext<T>(contextName: string): T {
       },
     },
   ) as T;
+}
+
+export function useSafeContext<T>(contextType: Context<T>): T {
+  const context = useContext(contextType);
+
+  if (context !== undefined) {
+    throw new Error(`useContext must be within ${contextType.displayName ?? ''}Provider`);
+  }
+
+  return context;
 }
