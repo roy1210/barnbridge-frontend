@@ -48,11 +48,6 @@ const PortfolioWithdraw: FC = () => {
         },
       },
     },
-    onSubmit: () => {
-      if (bnAmount) {
-        setConfirmModalVisible(true);
-      }
-    },
   });
 
   async function loadData() {
@@ -93,6 +88,12 @@ const PortfolioWithdraw: FC = () => {
     setSubmitting(false);
   }
 
+  function handleSubmit() {
+    if (bnAmount) {
+      setConfirmModalVisible(true);
+    }
+  }
+
   function handleCancel() {
     setConfirmModalVisible(false);
   }
@@ -116,7 +117,7 @@ const PortfolioWithdraw: FC = () => {
 
   return (
     <>
-      <Form form={form} disabled={isSubmitting}>
+      <Form form={form} disabled={isSubmitting} onSubmit={handleSubmit}>
         <div className="flex flow-row row-gap-32 p-24">
           <div className="container-box flex flow-col col-gap-44">
             <div className="flex flow-row row-gap-4">

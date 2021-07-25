@@ -1,10 +1,12 @@
 import { FC, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Web3 from 'web3';
+import { AbiItem } from 'web3-utils';
 import EventEmitter from 'wolfy87-eventemitter';
 
 import Icon, { IconNames } from 'components/custom/icon';
 import { Modal } from 'components/custom/modal';
 import { Text } from 'components/custom/typography';
+import { MainnetNetwork } from 'networks/mainnet';
 import { useGeneral } from 'providers/generalProvider';
 import { useNetwork } from 'providers/networkProvider';
 import { MetamaskConnector } from 'wallets/connectors/metamask';
@@ -12,9 +14,7 @@ import { useWallet } from 'wallets/walletProvider';
 
 import { InvariantContext } from 'utils/context';
 
-export const MainnetHttpsWeb3Provider = new Web3.providers.HttpProvider(
-  'https://mainnet.infura.io/v3/6c58700fe84943eb83c4cd5c23dff3d8',
-);
+export const MainnetHttpsWeb3Provider = new Web3.providers.HttpProvider(MainnetNetwork.rpc.httpsUrl);
 
 export const WEB3_ERROR_VALUE = 3.9638773911973445e75;
 
@@ -25,6 +25,7 @@ export type Web3ContextType = {
   activeProvider: any;
   showNetworkSelect: () => void;
   tryCall(to: string, from: string, data: string, value: string): any;
+  getContractAbi(address: string): Promise<AbiItem[]>;
   getEtherscanTxUrl(txHash?: string): string | undefined;
   getEtherscanAddressUrl(address?: string): string | undefined;
 };
@@ -80,6 +81,24 @@ const Web3Provider: FC = props => {
       value,
     });
   }
+
+  const getContractAbi = useCallback(
+    (address: string): Promise<AbiItem[]> => {
+      const { apiUrl, key } = activeNetwork.explorer;
+      const url = `${apiUrl}/api?module=contract&action=getabi&address=${address}&apikey=${key}`;
+
+      return fetch(url)
+        .then(result => result.json())
+        .then(({ status, result }: { status: string; result: string }) => {
+          if (status === '1') {
+            return JSON.parse(result) as AbiItem[];
+          }
+
+          return Promise.reject(result);
+        });
+    },
+    [activeNetwork.explorer],
+  );
 
   useEffect(() => {
     if (wallet.connector instanceof MetamaskConnector) {
@@ -168,7 +187,7 @@ const Web3Provider: FC = props => {
     return address ? `${activeNetwork.explorer.url}/address/${address}` : undefined;
   }
 
-  const value = {
+  const value: Web3ContextType = {
     web3,
     event,
     blockNumber,
@@ -177,6 +196,7 @@ const Web3Provider: FC = props => {
       showNetworkSelect(true);
     },
     tryCall,
+    getContractAbi,
     getEtherscanTxUrl,
     getEtherscanAddressUrl,
   };

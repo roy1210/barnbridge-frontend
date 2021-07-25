@@ -1,7 +1,16 @@
-import React, { FormEvent, ReactElement, ReactNode, createContext, useCallback, useContext } from 'react';
-import { Controller, FieldValues, useForm as rhUseForm, UseFormReturn as rhUseFormReturn } from 'react-hook-form';
-import { UseFormStateReturn } from 'react-hook-form/dist/types';
-import { ControllerFieldState, ControllerRenderProps } from 'react-hook-form/dist/types/controller';
+import React, { ReactElement, ReactNode } from 'react';
+import {
+  ArrayPath,
+  FieldValues,
+  FormProvider,
+  useForm as rhUseForm,
+  UseFormReturn as rhUseFormReturn,
+  useController,
+  useFieldArray,
+  useFormContext,
+} from 'react-hook-form';
+import { UseControllerReturn } from 'react-hook-form/dist/types';
+import { UseFieldArrayReturn } from 'react-hook-form/dist/types/fieldArray';
 import { DefaultValues, UnpackNestedValue } from 'react-hook-form/dist/types/form';
 import { Resolver, ResolverResult } from 'react-hook-form/dist/types/resolvers';
 import { FieldPath, FieldPathValue } from 'react-hook-form/dist/types/utils';
@@ -10,8 +19,6 @@ import { validate } from 'valirator';
 
 import { Hint, Text } from 'components/custom/typography';
 import { CP } from 'components/types.tx';
-
-import { InvariantContext } from 'utils/context';
 
 import s from './s.module.scss';
 
@@ -68,14 +75,7 @@ type FormContext<V extends FieldValues = FieldValues> = {
 
 type UseFormReturn<V extends FieldValues = FieldValues> = rhUseFormReturn<V> & {
   updateValue: (fieldName: FieldPath<V>, value: UnpackNestedValue<FieldPathValue<V, FieldPath<V>>>) => void;
-  submit: () => void | Promise<void>;
 };
-
-type InternalContextType<V extends FieldValues = FieldValues> = {
-  form: UseFormReturn<V>;
-};
-
-const InternalContext = createContext<InternalContextType<FieldValues>>(InvariantContext('Form'));
 
 function VFormEmptyResolver<V extends FieldValues = FieldValues>(values: V): ResolverResult {
   return {
@@ -111,11 +111,10 @@ export async function VFormValidationResolver<V extends FieldValues = FieldValue
 type useFormProps<V extends FieldValues = FieldValues> = {
   validationScheme?: SchemeType<V>;
   defaultValues?: DefaultValues<V>;
-  onSubmit: (values: UnpackNestedValue<V>) => any | Promise<any>;
 };
 
 export function useForm<V extends FieldValues = FieldValues>(props: useFormProps<V>): UseFormReturn<V> {
-  const { validationScheme, defaultValues, onSubmit } = props;
+  const { validationScheme, defaultValues } = props;
 
   const resolver = (validationScheme ? VFormValidationResolver : VFormEmptyResolver) as Resolver<V, FormContext<V>>;
 
@@ -129,8 +128,6 @@ export function useForm<V extends FieldValues = FieldValues>(props: useFormProps
     shouldUnregister: true,
   });
 
-  const submit = rhForm.handleSubmit(onSubmit);
-
   const updateValue = (fieldName: FieldPath<V>, value: UnpackNestedValue<FieldPathValue<V, FieldPath<V>>>) => {
     rhForm.setValue(fieldName, value, {
       shouldDirty: true,
@@ -140,36 +137,24 @@ export function useForm<V extends FieldValues = FieldValues>(props: useFormProps
 
   return Object.assign(rhForm, {
     updateValue,
-    submit,
   });
 }
 
 export type FormProps<V extends FieldValues = FieldValues> = {
   form: UseFormReturn<V>;
   disabled?: boolean;
+  onSubmit: (values: UnpackNestedValue<V>) => any | Promise<any>;
 };
 
 export function Form<V extends FieldValues = FieldValues>(props: CP<FormProps<V>>) {
-  const { children, className, form, disabled = false } = props;
-
-  const handleSubmit = useCallback(
-    (ev: FormEvent) => {
-      ev.preventDefault();
-      form.submit();
-    },
-    [form.submit],
-  );
-
-  const value = {
-    form,
-  } as InternalContextType;
+  const { children, className, form, disabled = false, onSubmit } = props;
 
   return (
-    <InternalContext.Provider value={value}>
-      <form className={classnames(s.form, className, disabled && s.disabled)} onSubmit={handleSubmit}>
+    <FormProvider {...form}>
+      <form className={classnames(s.form, className, disabled && s.disabled)} onSubmit={form.handleSubmit(onSubmit)}>
         <fieldset disabled={disabled}>{children}</fieldset>
       </form>
-    </InternalContext.Provider>
+    </FormProvider>
   );
 }
 
@@ -210,38 +195,33 @@ export type FormErrorProps = {
 
 export function FormError(props: CP<FormErrorProps>) {
   const { children, name } = props;
-  const { form } = useContext(InternalContext);
-
+  const form = useFormContext();
   const err = form.formState.errors[name];
 
-  if (!err) {
-    return null;
-  }
-
-  return (
+  return err ? (
     <Text type="small" weight="semibold" color="red">
       {err.message ?? children}
     </Text>
-  );
+  ) : null;
 }
 
-export type FormItemRender = {
-  field: ControllerRenderProps<FieldValues, string>;
-  fieldState: ControllerFieldState;
-  formState: UseFormStateReturn<FieldValues>;
-};
-
-export type FormItemProps = {
-  name: string;
+export type FormItemProps<V extends FieldValues = FieldValues> = {
+  name: FieldPath<V>;
   label?: ReactNode;
   labelProps?: Partial<FieldLabelProps>;
-  showError?: boolean;
-  children: (field: FormItemRender) => ReactElement;
+  hideError?: boolean;
+  children: (controller: UseControllerReturn<V>) => ReactElement;
 };
 
-export function FormItem(props: CP<FormItemProps>) {
-  const { children, name, label, labelProps = {}, showError = true } = props;
-  const { form } = useContext(InternalContext);
+export function FormItem<V extends FieldValues = FieldValues>(props: CP<FormItemProps<V>>) {
+  const { children, name, label, labelProps = {}, hideError = false } = props;
+  const form = useFormContext<V>();
+
+  const controller = useController<V>({
+    name,
+    control: form.control,
+    shouldUnregister: true,
+  });
 
   return (
     <ConditionalWrapper
@@ -251,8 +231,28 @@ export function FormItem(props: CP<FormItemProps>) {
           {children}
         </FieldLabel>
       )}>
-      <Controller name={name} control={form.control} render={children} shouldUnregister />
-      {showError && <FormError name={name} />}
+      {children(controller)}
+      {!hideError && <FormError name={name} />}
     </ConditionalWrapper>
   );
+}
+
+export type FormArrayProps<V extends FieldValues = FieldValues> = {
+  name: ArrayPath<V>;
+  keyName?: string;
+  children: (field: UseFieldArrayReturn<V, ArrayPath<V>, string>) => ReactNode;
+};
+
+export function FormArray<V extends FieldValues = FieldValues>(props: CP<FormArrayProps<V>>) {
+  const { children, name, keyName } = props;
+  const form = useFormContext<V>();
+
+  const fieldArray = useFieldArray<V, ArrayPath<V>, string>({
+    control: form.control,
+    name,
+    keyName,
+    shouldUnregister: true,
+  });
+
+  return <>{children(fieldArray)}</>;
 }

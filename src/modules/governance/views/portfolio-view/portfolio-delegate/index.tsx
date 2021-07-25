@@ -83,9 +83,6 @@ const PortfolioDelegate: FC = () => {
         },
       },
     },
-    onSubmit: () => {
-      setConfirmModalVisible(true);
-    },
   });
 
   async function loadData() {
@@ -131,6 +128,10 @@ const PortfolioDelegate: FC = () => {
     setSubmitting(false);
   }
 
+  function handleSubmit() {
+    setConfirmModalVisible(true);
+  }
+
   function handleCancel() {
     setConfirmModalVisible(false);
   }
@@ -150,7 +151,7 @@ const PortfolioDelegate: FC = () => {
 
   return (
     <>
-      <Form form={form} disabled={isSubmitting}>
+      <Form form={form} disabled={isSubmitting} onSubmit={handleSubmit}>
         <div className="flex flow-row row-gap-32 p-24">
           <div className="container-box flex flow-col col-gap-44">
             <div className="flex flow-row row-gap-4">
@@ -206,7 +207,7 @@ const PortfolioDelegate: FC = () => {
           </FormItem>
           {votingType === DELEGATED_KEY && (
             <FormItem name="delegateAddress" label="Address">
-              {({ field }) => <TokenInput {...field} />}
+              {({ field }) => <TokenInput value={field.value} onChange={field.onChange} />}
             </FormItem>
           )}
           <Alert message="Delegating your voting power to this address means that they will be able to vote in your place. You can’t delegate the voting bonus, only the staked balance." />
