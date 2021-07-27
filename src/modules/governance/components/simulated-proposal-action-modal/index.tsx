@@ -1,8 +1,6 @@
 import { FC } from 'react';
 
-import Button from 'components/antd/button';
 import Modal, { ModalProps } from 'components/antd/modal';
-import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 
@@ -19,38 +17,34 @@ const SimulatedProposalActionModal: FC<Props> = props => {
 
   return (
     <Modal width={560} {...modalProps}>
-      <Grid flow="row" gap={32}>
-        <Grid flow="row" gap={24}>
-          <Icon name="warning-outlined" width={40} height={40} color="red" />
-          <Grid flow="row" gap={8}>
-            <Text type="h3" weight="semibold" color="primary">
-              Action could not be simulated
-            </Text>
-            <Text type="p2" weight="semibold" color="secondary">
-              We run a simulation for every action before adding it to the proposal. The following action failed to
-              simulate:
-            </Text>
-          </Grid>
-          <ProposalActionCard
-            title=""
-            style={{ width: '496px' }}
-            target={targetAddress}
-            signature={functionSignature}
-            callData={functionEncodedParams}
-          />
-          <Text type="p2" weight="semibold" color="secondary">
-            If you think this is a mistake, you can still add this action to the proposal.
-          </Text>
-        </Grid>
-        <Grid flow="col" justify="space-between">
-          <Button type="default" onClick={modalProps.onOk}>
+      <div className="flex flow-row">
+        <Icon name="warning-outlined" width={40} height={40} color="red" className="mb-24" />
+        <Text type="h3" weight="bold" color="primary" className="mb-16">
+          Action could not be simulated
+        </Text>
+        <Text type="p2" weight="semibold" color="secondary" className="mb-32">
+          We run a simulation for every action before adding it to the proposal. The following action failed to
+          simulate:
+        </Text>
+        <ProposalActionCard
+          className="mb-32"
+          title=""
+          target={targetAddress}
+          signature={functionSignature}
+          callData={functionEncodedParams}
+        />
+        <Text type="p2" weight="semibold" color="secondary" className="mb-32">
+          If you think this is a mistake, you can still add this action to the proposal.
+        </Text>
+        <div className="flex flow-col justify-space-between">
+          <button type="button" className="button-secondary" onClick={modalProps.onOk}>
             Continue anyway
-          </Button>
-          <Button type="primary" onClick={modalProps.onCancel}>
-            Go back
-          </Button>
-        </Grid>
-      </Grid>
+          </button>
+          <button type="button" className="button-primary" onClick={modalProps.onCancel}>
+            Delete action
+          </button>
+        </div>
+      </div>
     </Modal>
   );
 };

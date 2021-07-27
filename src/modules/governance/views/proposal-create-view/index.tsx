@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from 'react';
-import { Redirect, useHistory } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 import Input from 'components/antd/input';
 import Textarea from 'components/antd/textarea';
@@ -8,61 +8,30 @@ import Icon from 'components/custom/icon';
 import { Spinner } from 'components/custom/spinner';
 import { Text } from 'components/custom/typography';
 import { executeFetch } from 'hooks/useFetch';
-import useMergeState from 'hooks/useMergeState';
-import { APIProposalEntity } from 'modules/governance/api';
+import { APIProposalEntity, APIProposalStateId } from 'modules/governance/api';
 import ProposalActionCard from 'modules/governance/components/proposal-action-card';
 import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useConfig } from 'providers/configProvider';
 import { useWallet } from 'wallets/walletProvider';
 
-import CreateProposalActionModal, { CreateProposalActionForm } from '../../components/create-proposal-action-modal';
+import CreateProposalActionModal, { ProposalAction } from '../../components/create-proposal-action-modal';
 import DeleteProposalActionModal from '../../components/delete-proposal-action-modal';
-
-type NewProposalForm = {
-  title: string;
-  description: string;
-  actions: CreateProposalActionForm[];
-};
-
-type ProposalCreateViewState = {
-  hasActiveProposal?: boolean;
-  showCreateActionModal: boolean;
-  showDeleteActionModal: boolean;
-  selectedAction?: CreateProposalActionForm;
-  submitting: boolean;
-};
-
-const InitialState: ProposalCreateViewState = {
-  hasActiveProposal: undefined,
-  showCreateActionModal: false,
-  showDeleteActionModal: false,
-  selectedAction: undefined,
-  submitting: false,
-};
-
-type ActionFormType = {
-  id: string;
-  target: string;
-  signature: string;
-  callData: string;
-};
 
 type FormType = {
   title: string;
   description: string;
-  actions: ActionFormType[];
+  actions: ProposalAction[];
 };
 
-const ProposalCreateView: FC = () => {
+const ProposalCreateViewA: FC = () => {
   const config = useConfig();
-  const history = useHistory();
   const daoCtx = useDAO();
-  const wallet = useWallet();
 
   const form = useForm<FormType>({
     defaultValues: {
       title: '',
       description: '',
+      actions: [],
     },
     validationScheme: {
       title: {
@@ -90,21 +59,20 @@ const ProposalCreateView: FC = () => {
 
   const [isSubmitting, setSubmitting] = useState(false);
   const [isCreateActionModal, showCreateActionModal] = useState(false);
+  const [isDeleteActionModal, showDeleteActionModal] = useState(false);
 
   const { formState, watch } = form;
-
-  const [state, setState] = useMergeState<ProposalCreateViewState>(InitialState);
+  const { isDirty } = formState;
+  const [actions] = watch(['actions']);
 
   function fetchProposal(proposalId: number): Promise<APIProposalEntity> {
     const url = new URL(`/api/governance/proposals/${proposalId}`, config.api.baseUrl);
     return executeFetch<APIProposalEntity>(url);
   }
 
-  function handleBackClick() {
-    history.push('/governance/proposals');
-  }
-
-  function handleCreateAction(payload: CreateProposalActionForm) {
+  function handleCreateAction(action: ProposalAction) {
+    showCreateActionModal(false);
+    form.updateValue('actions', [...actions, action]);
     // let actions = form.getFieldValue('actions');
     //
     // if (state.selectedAction) {
@@ -118,20 +86,7 @@ const ProposalCreateView: FC = () => {
     // });
   }
 
-  function handleActionDelete() {
-    const { selectedAction } = state;
-
-    if (selectedAction) {
-      // form.setFieldsValue({
-      //   actions: form.getFieldValue('actions').filter((action: CreateProposalActionForm) => action !== selectedAction),
-      // });
-    }
-
-    setState({
-      showDeleteActionModal: false,
-      selectedAction: undefined,
-    });
-  }
+  function handleActionDelete() {}
 
   async function handleSubmit(values: FormType) {
     setSubmitting(true);
@@ -205,40 +160,12 @@ const ProposalCreateView: FC = () => {
     // setState({ submitting: false });
   }
 
-  useEffect(() => {
-    // daoCtx.actions.hasActiveProposal().then(hasActiveProposal => {
-    //   setState({ hasActiveProposal });
-    // });
-  }, [wallet.account]);
-
-  if (!wallet.initialized) {
-    return null;
-  }
-
-  if (!wallet.isActive) {
-    return <Redirect to="/governance/proposals" />;
-  }
-
-  const hasCreateRestrictions = true; // TODO: state.hasActiveProposal !== undefined && daoCtx.actions.hasThreshold() !== undefined;
-
-  if (daoCtx.isActive === undefined || !hasCreateRestrictions) {
-    return null;
-  }
-
-  const canCreateProposal = true; // TODO: state.hasActiveProposal === false && daoCtx.actions.hasThreshold() === true;
-
-  if (!daoCtx.isActive || !canCreateProposal) {
-    return <Redirect to="/governance/proposals" />;
-  }
-
   return (
     <div className="container-fit">
-      <div className="mb-16">
-        <button type="button" className="button-text" onClick={handleBackClick}>
-          <Icon name="arrow-back" width={16} height={16} className="mr-8" color="inherit" />
-          Proposals
-        </button>
-      </div>
+      <Link to="/governance/proposals" className="button-back fit-width mb-16">
+        <Icon name="arrow-back" width={16} height={16} className="mr-8" color="inherit" />
+        Proposals
+      </Link>
       <Text type="h1" weight="bold" color="primary" className="mb-32">
         Create Proposal
       </Text>
@@ -285,9 +212,9 @@ const ProposalCreateView: FC = () => {
                     <ProposalActionCard
                       className="mb-24"
                       title={`Action ${index + 1}`}
-                      target={field.target}
-                      signature={field.signature}
-                      callData={field.callData}
+                      target={field.targetAddress}
+                      signature={field.functionSignature}
+                      callData={'0x'}
                       showSettings
                       onDeleteAction={() => remove(index)}
                       onEditAction={() => null}
@@ -367,11 +294,7 @@ const ProposalCreateView: FC = () => {
             </div>
           </div>
           <div className="flex flow-col justify-space-between">
-            <button
-              type="button"
-              className="button-ghost button-big"
-              disabled={!form.formState.isDirty}
-              onClick={() => form.reset()}>
+            <button type="button" className="button-ghost button-big" disabled={!isDirty} onClick={() => form.reset()}>
               Reset form
             </button>
             <button type="submit" className="button-primary button-big">
@@ -384,22 +307,18 @@ const ProposalCreateView: FC = () => {
 
       {isCreateActionModal && (
         <CreateProposalActionModal
-          edit={state.selectedAction !== undefined}
-          actions={[]}
-          initialValues={state.selectedAction}
+          actions={actions}
+          value={undefined}
           onCancel={() => showCreateActionModal(false)}
           onSubmit={handleCreateAction}
         />
       )}
 
-      {state.showDeleteActionModal && (
+      {isDeleteActionModal && (
         <DeleteProposalActionModal
-          onCancel={() =>
-            setState({
-              showDeleteActionModal: false,
-              selectedAction: undefined,
-            })
-          }
+          onCancel={() => {
+            showDeleteActionModal(false);
+          }}
           onOk={handleActionDelete}
         />
       )}
@@ -407,4 +326,89 @@ const ProposalCreateView: FC = () => {
   );
 };
 
-export default ProposalCreateView;
+type UseCheckProposalCreationReturn = {
+  hasThreshold: boolean | undefined;
+  hasActiveProposal: boolean | undefined;
+};
+
+function useCheckProposalCreation(): UseCheckProposalCreationReturn {
+  const wallet = useWallet();
+  const { daoGovernance, thresholdRate, minThresholdRate } = useDAO();
+  const [hasActiveProposal, setHasActiveProposal] = useState<boolean | undefined>();
+
+  useEffect(() => {
+    (async () => {
+      if (!wallet.account) {
+        return;
+      }
+
+      const latestProposalId = await daoGovernance.getLatestProposalIds(wallet.account);
+
+      if (!latestProposalId) {
+        return;
+      }
+
+      const latestProposalState = await daoGovernance.getState(latestProposalId);
+
+      if (!latestProposalState) {
+        return;
+      }
+
+      const isCompleted = [
+        APIProposalStateId.CANCELED,
+        APIProposalStateId.EXECUTED,
+        APIProposalStateId.FAILED,
+        APIProposalStateId.EXPIRED,
+        APIProposalStateId.ABROGATED,
+      ].includes(latestProposalState as any);
+
+      setHasActiveProposal(!isCompleted);
+    })();
+  }, [wallet.account, daoGovernance]);
+
+  const hasThreshold = thresholdRate ? thresholdRate >= minThresholdRate : undefined;
+
+  return {
+    hasThreshold,
+    hasActiveProposal,
+  };
+}
+
+const WalletCheck: FC = props => {
+  const wallet = useWallet();
+
+  if (!wallet.initialized) {
+    return <Spinner />;
+  }
+
+  if (!wallet.isActive) {
+    return <Redirect to="/governance/proposals" />;
+  }
+
+  return <>{props.children}</>;
+};
+
+const ProposalCreationCheck: FC = props => {
+  const dao = useDAO();
+  const { hasThreshold, hasActiveProposal } = useCheckProposalCreation();
+
+  if (dao.isActive === false || hasActiveProposal || hasThreshold === false) {
+    return <Redirect to="/governance/proposals" />;
+  }
+
+  if (dao.isActive === undefined || hasActiveProposal === undefined || hasThreshold === undefined) {
+    return <Spinner />;
+  }
+
+  return <>{props.children}</>;
+};
+
+export default function ProposalCreateView() {
+  return (
+    <WalletCheck>
+      <ProposalCreationCheck>
+        <ProposalCreateViewA />
+      </ProposalCreationCheck>
+    </WalletCheck>
+  );
+}

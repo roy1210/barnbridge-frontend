@@ -1,13 +1,19 @@
 import { FC } from 'react';
 
-export function injectProvider<T extends Record<string, any>>(
-  Component: FC<T>,
-  Provider: FC,
-  providerProps?: Record<string, any>,
-): FC<T> {
-  return (props: T) => (
-    <Provider {...providerProps}>
-      <Component {...props} />
-    </Provider>
-  );
+type Props = Record<string, any>;
+
+export function WrapComponent<C extends Props, W extends Props>(
+  Component: FC<C>,
+  Wrapper: FC<W>,
+  wrapperProps?: (cProps: C) => W,
+): FC<C> {
+  return function WrappedComponent(props: C) {
+    return (
+      <Wrapper {...wrapperProps?.(props)!}>
+        <Component {...props} />
+      </Wrapper>
+    );
+  };
 }
+
+export const injectProvider = WrapComponent;

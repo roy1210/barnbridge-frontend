@@ -4,14 +4,12 @@ import cn from 'classnames';
 import { AbiDecodeResult, AbiFunctionFragment, AbiInterface } from 'web3/abiInterface';
 import { shortenAddr } from 'web3/utils';
 
-import Button from 'components/antd/button';
 import PopoverMenu, { PopoverMenuItem } from 'components/antd/popover-menu';
 import ExpandableCard, { ExpandableCardProps } from 'components/custom/expandable-card';
-import ExternalLink from 'components/custom/externalLink';
-import Grid from 'components/custom/grid';
+import { ExplorerAddressLink } from 'components/custom/externalLink';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
-import { useWeb3 } from 'providers/web3Provider';
+import DeleteProposalActionModal from 'modules/governance/components/delete-proposal-action-modal';
 
 import s from './s.module.scss';
 
@@ -39,11 +37,10 @@ const ProposalActionCard: FC<Props> = props => {
     ...cardProps
   } = props;
 
-  const { getEtherscanAddressUrl } = useWeb3();
-
-  const [ellipsis, setEllipsis] = useState<boolean>(false);
-  const [expanded, setExpanded] = useState<boolean>(false);
-  const [isSignature, showSignature] = useState<boolean>(false);
+  const [ellipsis, setEllipsis] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [isSignature, showSignature] = useState(false);
+  const [isDeleteActionModal, showDeleteActionModal] = useState(false);
 
   const functionFragment = useMemo<AbiFunctionFragment | undefined>(() => {
     return AbiInterface.getFunctionFragmentFrom(signature);
@@ -61,10 +58,6 @@ const ProposalActionCard: FC<Props> = props => {
     const params = functionParamValues?.map(param => AbiInterface.stringifyParamValue(param));
     return params?.join(',\n') ?? '';
   }, [functionParamValues]);
-
-  const etherscanLink = useMemo<string>(() => {
-    return `${getEtherscanAddressUrl(target)}#writeContract`;
-  }, [target]);
 
   const ActionMenuItems: PopoverMenuItem[] = [
     {
@@ -92,32 +85,6 @@ const ProposalActionCard: FC<Props> = props => {
     },
   ];
 
-  function handleEllipsis(isEllipsis: boolean) {
-    setEllipsis(isEllipsis);
-
-    if (isEllipsis) {
-      setExpanded(!isEllipsis);
-    }
-  }
-
-  function handleShowSignature() {
-    showSignature(prevState => !prevState);
-  }
-
-  function handleExpand() {
-    setExpanded(prevState => !prevState);
-  }
-
-  function handleActionMenu(key: string) {
-    if (key === 'sig') {
-      handleShowSignature();
-    } else if (key === 'edit') {
-      onEditAction?.();
-    } else if (key === 'delete') {
-      onDeleteAction?.();
-    }
-  }
-
   return (
     <ExpandableCard
       className={className}
@@ -128,35 +95,58 @@ const ProposalActionCard: FC<Props> = props => {
       }
       extra={
         showSettings ? (
-          <PopoverMenu items={ActionMenuItems} placement="bottomLeft" onClick={key => handleActionMenu(String(key))}>
-            <Button type="link" icon={<Icon name="gear" />} />
+          <PopoverMenu
+            items={ActionMenuItems}
+            placement="bottomLeft"
+            onClick={key => {
+              if (key === 'sig') {
+                showSignature(prevState => !prevState);
+              } else if (key === 'edit') {
+                onEditAction?.();
+              } else if (key === 'delete') {
+                showDeleteActionModal(true);
+              }
+            }}>
+            <button type="button" className="button-text">
+              <Icon name="gear" />
+            </button>
           </PopoverMenu>
         ) : (
-          <Button type="link" onClick={handleShowSignature}>
+          <button
+            type="button"
+            className="button-text"
+            onClick={() => {
+              showSignature(prevState => !prevState);
+            }}>
             <Text type="small" weight="semibold" color="secondary">
               {isSignature ? 'Show transaction' : 'Show function signature'}
             </Text>
-          </Button>
+          </button>
         )
       }
       footer={
         ellipsis || expanded ? (
-          <Grid flow="col" align="center" justify="center">
-            <Button type="link" onClick={handleExpand}>
+          <div className="flex flow-col align-center justify-center">
+            <button
+              type="button"
+              className="button-text"
+              onClick={() => {
+                setExpanded(prevState => !prevState);
+              }}>
               <Text type="small" weight="semibold" color="secondary">
                 {expanded ? 'Hide details' : 'Show more'}
               </Text>
-            </Button>
-          </Grid>
+            </button>
+          </div>
         ) : null
       }
       {...cardProps}>
       <div className={s.content}>
-        <ExternalLink href={etherscanLink}>
+        <ExplorerAddressLink address={target} query="#writeContract">
           <Text type="p1" weight="semibold" className={s.address} color="blue">
             {shortenAddr(target)}
           </Text>
-        </ExternalLink>
+        </ExplorerAddressLink>
         {signature && (
           <AntdTypography.Paragraph
             className={cn(s.paragraph, expanded && s.expanded)}
@@ -164,12 +154,29 @@ const ProposalActionCard: FC<Props> = props => {
             ellipsis={{
               rows: expanded ? 9999 : 2,
               expandable: false,
-              onEllipsis: handleEllipsis,
+              onEllipsis: isEllipsis => {
+                setEllipsis(isEllipsis);
+
+                if (isEllipsis) {
+                  setExpanded(!isEllipsis);
+                }
+              },
             }}>
             .{isSignature ? signature : `${functionFragment?.name}(${stringParams})`}
           </AntdTypography.Paragraph>
         )}
       </div>
+      {isDeleteActionModal && (
+        <DeleteProposalActionModal
+          onCancel={() => {
+            showDeleteActionModal(false);
+          }}
+          onOk={() => {
+            showDeleteActionModal(false);
+            onDeleteAction?.();
+          }}
+        />
+      )}
     </ExpandableCard>
   );
 };

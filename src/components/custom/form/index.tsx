@@ -3,11 +3,11 @@ import {
   ArrayPath,
   FieldValues,
   FormProvider,
-  useForm as rhUseForm,
-  UseFormReturn as rhUseFormReturn,
   useController,
   useFieldArray,
-  useFormContext,
+  useForm as rhUseForm,
+  UseFormReturn as rhUseFormReturn,
+  useFormState,
 } from 'react-hook-form';
 import { UseControllerReturn } from 'react-hook-form/dist/types';
 import { UseFieldArrayReturn } from 'react-hook-form/dist/types/fieldArray';
@@ -18,7 +18,7 @@ import classnames from 'classnames';
 import { validate } from 'valirator';
 
 import { Hint, Text } from 'components/custom/typography';
-import { CP } from 'components/types.tx';
+import { CP, FCx } from 'components/types.tx';
 
 import s from './s.module.scss';
 
@@ -63,8 +63,8 @@ type SchemeType<V extends FieldValues = FieldValues> = {
     rules: ValiratorRulesType<V, P>;
     messages: {
       [M in keyof ValiratorRulesType<V, P>]:
-        | string
-        | ((actual: any, expected: any, property: string, obj: V) => string);
+      | string
+      | ((actual: any, expected: any, property: string, obj: V) => string);
     };
   };
 };
@@ -119,12 +119,15 @@ export function useForm<V extends FieldValues = FieldValues>(props: useFormProps
   const resolver = (validationScheme ? VFormValidationResolver : VFormEmptyResolver) as Resolver<V, FormContext<V>>;
 
   const rhForm = rhUseForm<V, FormContext<V>>({
-    mode: 'all',
-    resolver,
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    defaultValues,
     context: {
       scheme: validationScheme,
     },
-    defaultValues,
+    criteriaMode: 'firstError',
+    shouldFocusError: false,
+    resolver,
     shouldUnregister: true,
   });
 
@@ -151,7 +154,10 @@ export function Form<V extends FieldValues = FieldValues>(props: CP<FormProps<V>
 
   return (
     <FormProvider {...form}>
-      <form className={classnames(s.form, className, disabled && s.disabled)} onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        noValidate
+        className={classnames(s.form, className, disabled && s.disabled)}
+        onSubmit={form.handleSubmit(onSubmit)}>
         <fieldset disabled={disabled}>{children}</fieldset>
       </form>
     </FormProvider>
@@ -164,7 +170,7 @@ export type FieldLabelProps = {
   extra?: ReactNode;
 };
 
-export function FieldLabel(props: CP<FieldLabelProps>) {
+export const FieldLabel: FCx<FieldLabelProps> = props => {
   const { children, className, label, hint, extra } = props;
 
   return (
@@ -186,7 +192,7 @@ export function FieldLabel(props: CP<FieldLabelProps>) {
       {children}
     </div>
   );
-}
+};
 
 export type FormErrorProps = {
   name: string;
@@ -195,8 +201,9 @@ export type FormErrorProps = {
 
 export function FormError(props: CP<FormErrorProps>) {
   const { children, name } = props;
-  const form = useFormContext();
-  const err = form.formState.errors[name];
+
+  const { errors } = useFormState();
+  const err = errors[name];
 
   return err ? (
     <Text type="small" weight="semibold" color="red">
@@ -210,16 +217,16 @@ export type FormItemProps<V extends FieldValues = FieldValues> = {
   label?: ReactNode;
   labelProps?: Partial<FieldLabelProps>;
   hideError?: boolean;
+  defaultValue?: UnpackNestedValue<FieldPathValue<V, FieldPath<V>>>;
   children: (controller: UseControllerReturn<V>) => ReactElement;
 };
 
 export function FormItem<V extends FieldValues = FieldValues>(props: CP<FormItemProps<V>>) {
-  const { children, name, label, labelProps = {}, hideError = false } = props;
-  const form = useFormContext<V>();
+  const { children, name, label, labelProps = {}, hideError = false, defaultValue } = props;
 
   const controller = useController<V>({
     name,
-    control: form.control,
+    defaultValue,
     shouldUnregister: true,
   });
 
@@ -245,10 +252,8 @@ export type FormArrayProps<V extends FieldValues = FieldValues> = {
 
 export function FormArray<V extends FieldValues = FieldValues>(props: CP<FormArrayProps<V>>) {
   const { children, name, keyName } = props;
-  const form = useFormContext<V>();
 
   const fieldArray = useFieldArray<V, ArrayPath<V>, string>({
-    control: form.control,
     name,
     keyName,
     shouldUnregister: true,

@@ -53,7 +53,7 @@ const ProposalsView: FC = () => {
     })();
   }, []);
 
-  const hasThreshold = thresholdRate >= minThresholdRate;
+  const hasThreshold = thresholdRate ? thresholdRate >= minThresholdRate : undefined;
   const hasCreateRestrictions = hasActiveProposal !== undefined && hasThreshold;
   const canCreateProposal = hasActiveProposal === false && hasThreshold;
 

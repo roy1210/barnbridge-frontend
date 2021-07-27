@@ -16,15 +16,16 @@ const ExternalLink: React.FC<ExternalLinkProps> = props => {
 
 type ExplorerAddressLinkProps = ExternalLinkProps & {
   address: string;
+  query?: string;
 };
 
 export const ExplorerAddressLink: FC<ExplorerAddressLinkProps> = props => {
-  const { children, address, ...rest } = props;
+  const { children, address, query = '', ...rest } = props;
 
   const { getEtherscanAddressUrl } = useWeb3();
 
   return (
-    <ExternalLink href={getEtherscanAddressUrl(address)} {...rest}>
+    <ExternalLink href={`${getEtherscanAddressUrl(address)}${query}`} {...rest}>
       {children}
     </ExternalLink>
   );

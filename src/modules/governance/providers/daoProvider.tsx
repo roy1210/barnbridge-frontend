@@ -18,7 +18,7 @@ type DAOContextType = {
   minThresholdRate: number;
   activationThreshold: number;
   activationRate: number;
-  thresholdRate: number;
+  thresholdRate: number | undefined;
 };
 
 const Context = createContext<DAOContextType>(InvariantContext('DAOProvider'));
@@ -90,7 +90,7 @@ const DAOProvider: FC = props => {
 
   const thresholdRate = useMemo(() => {
     if (!daoBarn.votingPower || !daoBarn.bondStaked?.gt(0)) {
-      return 0;
+      return undefined;
     }
 
     const rate = daoBarn.votingPower.div(daoBarn.bondStaked).multipliedBy(100);

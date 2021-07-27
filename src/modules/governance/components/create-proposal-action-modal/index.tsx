@@ -1,79 +1,23 @@
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import AntdSwitch from 'antd/lib/switch';
-import { AbiFunctionFragment, AbiInterface } from 'web3/abiInterface';
+import { AbiInterface } from 'web3/abiInterface';
 
 import Alert from 'components/antd/alert';
 import Input from 'components/antd/input';
-import Modal, { ModalProps } from 'components/antd/modal';
+import Modal, { ConfirmActionModal, ModalProps } from 'components/antd/modal';
 import Select from 'components/antd/select';
 import Textarea from 'components/antd/textarea';
 import YesNoSelector from 'components/antd/yes-no-selector';
 import { FieldLabel, Form, FormArray, FormItem, useForm } from 'components/custom/form';
 import { Spinner } from 'components/custom/spinner';
 import { Hint, Text } from 'components/custom/typography';
+import { useConfig } from 'providers/configProvider';
 import { useWeb3 } from 'providers/web3Provider';
 
 import AddZerosPopup from '../add-zeros-popup';
 import SimulatedProposalActionModal from '../simulated-proposal-action-modal';
 
 import s from './s.module.scss';
-
-export type CreateProposalActionForm = {
-  targetAddress: string;
-  isProxyAddress: boolean;
-  implementationAddress: string;
-  addValueAttribute?: boolean;
-  actionValue: string;
-  addFunctionCall?: boolean;
-  abiLoading: boolean;
-  abiInterface?: AbiInterface;
-  functionSignature?: string;
-  functionMeta?: AbiFunctionFragment;
-  functionParams: Record<string, any>;
-  functionStrParams: string;
-  functionEncodedParams: string;
-};
-
-const InitialFormValues: CreateProposalActionForm = {
-  targetAddress: '',
-  isProxyAddress: false,
-  implementationAddress: '',
-  addValueAttribute: false,
-  actionValue: '',
-  addFunctionCall: false,
-  abiLoading: false,
-  abiInterface: undefined,
-  functionSignature: '',
-  functionMeta: undefined,
-  functionParams: {},
-  functionStrParams: '',
-  functionEncodedParams: '',
-};
-
-type CreateProposalActionModalState = {
-  showSimulatedActionModal: boolean;
-  simulatedAction?: CreateProposalActionForm;
-  simulationResolve?: () => void;
-  simulationReject?: () => void;
-  formDirty: boolean;
-  submitting: boolean;
-};
-
-const InitialState: CreateProposalActionModalState = {
-  showSimulatedActionModal: false,
-  simulatedAction: undefined,
-  simulationResolve: undefined,
-  simulationReject: undefined,
-  formDirty: false,
-  submitting: false,
-};
-
-type Props = ModalProps & {
-  edit?: boolean;
-  actions: CreateProposalActionForm[];
-  initialValues?: CreateProposalActionForm;
-  onSubmit: (values: CreateProposalActionForm) => void;
-};
 
 type FunctionInputType = {
   name: string;
@@ -86,25 +30,33 @@ type FormType = {
   targetAddress: string;
   isProxyAddress: boolean;
   implementationAddress: string;
-  addValueAttribute: boolean | undefined;
+  addValueAttribute: boolean | null;
   actionValue: string;
-  addFunctionCall: boolean | undefined;
+  addFunctionCall: boolean | null;
   functionSignature: string;
   functionInputs: FunctionInputType[];
 };
 
+export type ProposalAction = FormType;
+
+type Props = ModalProps & {
+  actions: ProposalAction[];
+  value?: ProposalAction;
+  onSubmit: (values: ProposalAction) => void;
+};
+
 const CreateProposalActionModal: FC<Props> = props => {
-  const { edit = false } = props;
-  const { getContractAbi } = useWeb3();
+  const config = useConfig();
+  const { getContractAbi, tryCall } = useWeb3();
 
   const form = useForm<FormType>({
     defaultValues: {
       targetAddress: '',
       isProxyAddress: false,
       implementationAddress: '',
-      addValueAttribute: undefined,
+      addValueAttribute: null,
       actionValue: '',
-      addFunctionCall: undefined,
+      addFunctionCall: null,
       functionSignature: '',
       functionInputs: [],
     },
@@ -134,7 +86,7 @@ const CreateProposalActionModal: FC<Props> = props => {
       addValueAttribute: {
         rules: {
           required: value => {
-            return value !== undefined;
+            return value !== null;
           },
           atLeastOne: (value, rule, obj) => {
             return value !== false || obj.addFunctionCall !== false;
@@ -148,7 +100,7 @@ const CreateProposalActionModal: FC<Props> = props => {
       addFunctionCall: {
         rules: {
           required: value => {
-            return value !== undefined;
+            return value !== null;
           },
         },
         messages: {
@@ -162,6 +114,7 @@ const CreateProposalActionModal: FC<Props> = props => {
   formRef.current = form;
 
   const { formState, watch } = form;
+  const { isDirty } = formState;
   const [
     targetAddress,
     isProxyAddress,
@@ -184,12 +137,8 @@ const CreateProposalActionModal: FC<Props> = props => {
   const [abiLoading, setAbiLoading] = useState(false);
   const [abiInterface, setAbiInterface] = useState<AbiInterface | undefined>();
   const [isSubmitting, setSubmitting] = useState(false);
+  const [isDirtyClose, setDirtyClose] = useState(false);
   const [isSimulatedActionModal, showSimulatedActionModal] = useState(false);
-  const [simulatedAction, setSimulatedAction] = useState({
-    targetAddress: '',
-    functionSignature: '',
-    functionEncodedParams: '',
-  });
 
   const abiAddress = isProxyAddress ? implementationAddress : targetAddress;
 
@@ -227,8 +176,8 @@ const CreateProposalActionModal: FC<Props> = props => {
     }
 
     setAbiInterface(undefined);
-    form.updateValue('functionSignature', '');
-    form.updateValue('functionInputs', []);
+    formRef.current.updateValue('functionSignature', '');
+    formRef.current.updateValue('functionInputs', []);
 
     if (!abiAddress) {
       return;
@@ -252,128 +201,54 @@ const CreateProposalActionModal: FC<Props> = props => {
   }, [addFunctionCall, abiAddress, getContractAbi]);
 
   useEffect(() => {
-    let inputs: FunctionInputType[] = [];
-
-    if (abiSelectedFunction) {
-      inputs = abiSelectedFunction.inputs.map(input => ({
-        name: input.name,
-        type: input.type,
-        value: '',
-      }));
+    if (!abiSelectedFunction) {
+      return;
     }
+
+    const inputs = abiSelectedFunction.inputs.map(input => ({
+      name: input.name,
+      type: input.type,
+      value: '',
+    }));
 
     formRef.current.updateValue('functionInputs', inputs);
   }, [abiSelectedFunction]);
 
-  function handleFormValuesChange(values: Partial<CreateProposalActionForm>, allValues: CreateProposalActionForm) {
-    /*const {
-      if (fieldName === 'targetAddress' || fieldName === 'implementationAddress') {
-        form.setFieldsValue({
-          abiLoading: false,
-          abiInterface: undefined,
-          functionSignature: '',
-          functionMeta: undefined,
-          functionParams: {},
-          functionStrParams: '',
-          functionEncodedParams: '',
-        });
+  async function tryAction(values: FormType) {
+    if (!abiInterface || !abiSelectedFunction || !config.contracts.dao) {
+      throw new Error('Invalid action');
+    }
 
-        const address = implementationAddress || targetAddress;
+    const params = values.functionInputs.map(input => input.value);
+    const encodedFunction = abiInterface.encodeFunctionData(abiSelectedFunction, params);
 
-        if (addFunctionCall === true && address) {
-          loadAbiInterface(address);
-        }
-      } else if (fieldName === 'isProxyAddress') {
-        if (!isProxyAddress && implementationAddress) {
-          form.setFieldsValue({
-            abiLoading: false,
-            abiInterface: undefined,
-            functionSignature: '',
-            functionMeta: undefined,
-            functionParams: {},
-            functionStrParams: '',
-            functionEncodedParams: '',
-          });
+    await tryCall(
+      values.targetAddress,
+      config.contracts.dao.governance,
+      encodedFunction ?? '0x',
+      values.actionValue ?? '',
+    );
+  }
 
-          if (addFunctionCall === true && targetAddress) {
-            loadAbiInterface(targetAddress);
-          }
-        }
-      } else if (fieldName === 'addValueAttribute') {
-        form.setFieldsValue({
-          actionValue: '',
-        });
-      } else if (fieldName === 'addFunctionCall') {
-        form.setFieldsValue({
-          abiLoading: false,
-          abiInterface: undefined,
-          functionSignature: '',
-          functionMeta: undefined,
-          functionParams: {},
-          functionStrParams: '',
-          functionEncodedParams: '',
-        });
-
-        const address = implementationAddress || targetAddress;
-
-        if (addFunctionCall === true && address) {
-          loadAbiInterface(address);
-        }
-      } else if (fieldName === 'functionSignature') {
-        const selectedFunctionMeta = (abiInterface?.writableFunctions ?? []).find(
-          fn => fn.format() === functionSignature,
-        );
-        let functionStrParams = '';
-
-        if (selectedFunctionMeta) {
-          const params = selectedFunctionMeta.inputs.map(({ name, type }) => ({
-            name,
-            type,
-          }));
-          const paramsStr = JSON.stringify(params, null, 2);
-          functionStrParams = `Parameters:\n${paramsStr}`;
-        }
-
-        form.setFieldsValue({
-          functionMeta: selectedFunctionMeta,
-          functionParams: {},
-          functionStrParams,
-          functionEncodedParams: '',
-        });
-      } else if (fieldName === 'functionParams') {
-        if (functionMeta) {
-          const paramsValues = Object.values(functionParams);
-          const encodedParams = AbiInterface.encodeFunctionData(functionMeta, paramsValues);
-
-          form.setFieldsValue({
-            functionEncodedParams: encodedParams,
-          });
-        }
-      }
-    });
-
-    setState({
-      formDirty: form.isFieldsTouched(),
-    });*/
+  function handleCancel() {
+    if (isDirty) {
+      setDirtyClose(true);
+    } else {
+      props.onCancel();
+    }
   }
 
   async function handleSubmit(values: FormType) {
-    console.log('VALUES', values);
-
-    // const encodedFunction = values.abiInterface?.encodeFunctionData(
-    //   values.functionMeta!,
-    //   Object.values(values.functionParams ?? {}),
-    // );
-    //
-    // try {
-    //   await web3.tryCall(
-    //     values.targetAddress,
-    //     config.contracts.dao?.governance!,
-    //     encodedFunction!,
-    //     values.actionValue,
-    //   );
-    // } catch {
-    // }
+    try {
+      setSubmitting(true);
+      await tryAction(values);
+      setSubmitting(false);
+      props.onSubmit(values);
+    } catch (e) {
+      console.error(e);
+      setSubmitting(false);
+      showSimulatedActionModal(true);
+    }
     /*const existsSimilar = props.actions.some(action => {
       return (
         action !== values &&
@@ -391,66 +266,15 @@ const CreateProposalActionModal: FC<Props> = props => {
       return;
     }
 
-    setState({ submitting: true });
-
-    let cancel = false;
-
-    try {
-      await form.validateFields();
-
-      if (values.addFunctionCall) {
-        const encodedFunction = values.abiInterface?.encodeFunctionData(
-          values.functionMeta!,
-          Object.values(values.functionParams ?? {}),
-        );
-
-        try {
-          await web3.tryCall(
-            values.targetAddress,
-            config.contracts.dao?.governance!,
-            encodedFunction!,
-            values.actionValue,
-          );
-        } catch {
-          await new Promise<void>((resolve, reject) => {
-            setState({
-              showSimulatedActionModal: true,
-              simulatedAction: values,
-              simulationResolve: resolve,
-              simulationReject: reject,
-            });
-          });
-        }
-      }
-
-      await props.onSubmit(values);
-      form.resetFields();
-      cancel = true;
-    } catch (e) {
-      if (e?.message) {
-        AntdNotification.error({
-          message: e?.message,
-        });
-      }
-    }
-
-    setState({ submitting: false });
-
-    if (cancel) {
-      props.onCancel?.();
     }*/
   }
 
   return (
-    <Modal
-      className={s.component}
-      confirmClose={formState.isDirty}
-      confirmText="Are you sure you want to close this form?"
-      {...props}>
+    <Modal className={s.component} {...props} onCancel={handleCancel}>
       <Text type="h2" weight="semibold" className="mb-64" color="primary">
-        {edit ? 'Edit action' : 'Add new action'}
+        {props.value ? 'Edit action' : 'Add new action'}
       </Text>
-      <Form form={form} onSubmit={handleSubmit}>
+      <Form form={form} disabled={isSubmitting} onSubmit={handleSubmit}>
         <div className="container-thin flex flow-row row-gap-32">
           <div className="flex flow-row row-gap-8">
             <FormItem
@@ -462,8 +286,7 @@ const CreateProposalActionModal: FC<Props> = props => {
               {({ field }) => <Input value={field.value} onChange={field.onChange} />}
             </FormItem>
             <div className="flex flow-col align-center justify-space-between">
-              <Hint
-                text="In case you are using a proxy address as the target, please specify the address where the function implementation is found.">
+              <Hint text="In case you are using a proxy address as the target, please specify the address where the function implementation is found.">
                 <Text type="small" weight="semibold" color="secondary">
                   Is this a proxy address?
                 </Text>
@@ -607,24 +430,40 @@ const CreateProposalActionModal: FC<Props> = props => {
           )}
 
           <div className="flex flow-col justify-space-between">
-            <button type="button" className="button-ghost-monochrome" onClick={props.onCancel}>
-              {edit ? 'Cancel changes' : 'Cancel'}
+            <button type="button" className="button-ghost-monochrome" onClick={handleCancel}>
+              {props.value ? 'Cancel changes' : 'Cancel'}
             </button>
             <button type="submit" className="button-primary">
               {isSubmitting && <Spinner className="mr-8" />}
-              {edit ? 'Save changes' : 'Add action'}
+              {props.value ? 'Save changes' : 'Add action'}
             </button>
           </div>
         </div>
       </Form>
 
-      {isSimulatedActionModal && simulatedAction && (
+      {isDirtyClose && (
+        <ConfirmActionModal
+          width={460}
+          text="Are you sure you want to close this form?"
+          onCancel={() => setDirtyClose(false)}
+          onOk={() => {
+            setDirtyClose(false);
+            props.onCancel();
+          }}
+        />
+      )}
+      {isSimulatedActionModal && (
         <SimulatedProposalActionModal
-          targetAddress={simulatedAction.targetAddress}
-          functionSignature={simulatedAction.functionSignature}
-          functionEncodedParams={simulatedAction.functionEncodedParams}
-          onOk={() => true}
-          onCancel={() => false}
+          targetAddress={targetAddress}
+          functionSignature={functionSignature}
+          functionEncodedParams={abiSelectedFunctionEncoded}
+          onOk={() => {
+            showSimulatedActionModal(false);
+            props.onSubmit(formRef.current.getValues());
+          }}
+          onCancel={() => {
+            showSimulatedActionModal(false);
+          }}
         />
       )}
     </Modal>
