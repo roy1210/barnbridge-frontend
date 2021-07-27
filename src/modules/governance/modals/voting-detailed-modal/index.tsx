@@ -11,7 +11,7 @@ import { useDAO } from 'modules/governance/providers/daoProvider';
 
 import { isValidAddress } from 'utils';
 
-import s from './s.module.scss';
+import s from 'modules/governance/modals/voting-detailed-modal/s.module.scss';
 
 type VotingDetailedModalState = {
   leftBonus?: BigNumber;

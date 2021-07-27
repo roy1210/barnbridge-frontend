@@ -1,5 +1,6 @@
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
 import AntdSwitch from 'antd/lib/switch';
+import uniqueId from 'lodash/uniqueId';
 import { AbiInterface } from 'web3/abiInterface';
 
 import Alert from 'components/antd/alert';
@@ -11,13 +12,12 @@ import YesNoSelector from 'components/antd/yes-no-selector';
 import { FieldLabel, Form, FormArray, FormItem, useForm } from 'components/custom/form';
 import { Spinner } from 'components/custom/spinner';
 import { Hint, Text } from 'components/custom/typography';
+import AddZerosPopup from 'modules/governance/components/add-zeros-popup';
+import SimulatedProposalActionModal from 'modules/governance/modals/simulated-proposal-action-modal';
 import { useConfig } from 'providers/configProvider';
 import { useWeb3 } from 'providers/web3Provider';
 
-import AddZerosPopup from '../add-zeros-popup';
-import SimulatedProposalActionModal from '../simulated-proposal-action-modal';
-
-import s from './s.module.scss';
+import s from 'modules/governance/modals/create-proposal-action-modal/s.module.scss';
 
 type FunctionInputType = {
   name: string;
@@ -26,7 +26,6 @@ type FunctionInputType = {
 };
 
 type FormType = {
-  custom: any;
   targetAddress: string;
   isProxyAddress: boolean;
   implementationAddress: string;
@@ -37,17 +36,22 @@ type FormType = {
   functionInputs: FunctionInputType[];
 };
 
-export type ProposalAction = FormType;
+export type ProposalAction = FormType & {
+  id: string;
+  encodedParams: string;
+};
 
 type Props = ModalProps & {
   actions: ProposalAction[];
-  value?: ProposalAction;
+  value: ProposalAction | undefined;
   onSubmit: (values: ProposalAction) => void;
 };
 
 const CreateProposalActionModal: FC<Props> = props => {
   const config = useConfig();
   const { getContractAbi, tryCall } = useWeb3();
+
+  const isEditMode = Boolean(props.value);
 
   const form = useForm<FormType>({
     defaultValues: {
@@ -59,6 +63,7 @@ const CreateProposalActionModal: FC<Props> = props => {
       addFunctionCall: null,
       functionSignature: '',
       functionInputs: [],
+      ...props.value,
     },
     validationScheme: {
       targetAddress: {
@@ -123,7 +128,6 @@ const CreateProposalActionModal: FC<Props> = props => {
     addFunctionCall,
     functionSignature,
     functionInputs,
-    // @ts-ignore
   ] = watch([
     'targetAddress',
     'isProxyAddress',
@@ -167,8 +171,11 @@ const CreateProposalActionModal: FC<Props> = props => {
 
   const abiSelectedFunctionEncoded = useMemo(() => {
     const paramsValues = functionInputs.map(input => input.value);
-    return abiSelectedFunction ? AbiInterface.encodeFunctionData(abiSelectedFunction, paramsValues) : '';
+    return abiSelectedFunction ? AbiInterface.encodeFunctionData(abiSelectedFunction, paramsValues) ?? '0x' : '0x';
   }, [abiSelectedFunction, functionInputs]);
+
+  const abiSelectedFunctionEncodedRef = useRef(abiSelectedFunctionEncoded);
+  abiSelectedFunctionEncodedRef.current = abiSelectedFunctionEncoded;
 
   useEffect(() => {
     if (!addFunctionCall) {
@@ -191,6 +198,11 @@ const CreateProposalActionModal: FC<Props> = props => {
 
         if (abi) {
           setAbiInterface(new AbiInterface(abi as any));
+
+          if (isEditMode) {
+            formRef.current.updateValue('functionSignature', props.value?.functionSignature ?? '');
+            formRef.current.updateValue('functionInputs', props.value?.functionInputs ?? []);
+          }
         }
       } catch (e) {
         console.error(e);
@@ -238,12 +250,23 @@ const CreateProposalActionModal: FC<Props> = props => {
     }
   }
 
+  function save() {
+    const values = formRef.current.getValues();
+    const actionId = props.value?.id ?? uniqueId('action-');
+
+    props.onSubmit({
+      ...values,
+      id: actionId,
+      encodedParams: abiSelectedFunctionEncoded,
+    });
+  }
+
   async function handleSubmit(values: FormType) {
     try {
       setSubmitting(true);
       await tryAction(values);
       setSubmitting(false);
-      props.onSubmit(values);
+      save();
     } catch (e) {
       console.error(e);
       setSubmitting(false);
@@ -271,11 +294,11 @@ const CreateProposalActionModal: FC<Props> = props => {
 
   return (
     <Modal className={s.component} {...props} onCancel={handleCancel}>
-      <Text type="h2" weight="semibold" className="mb-64" color="primary">
-        {props.value ? 'Edit action' : 'Add new action'}
-      </Text>
       <Form form={form} disabled={isSubmitting} onSubmit={handleSubmit}>
         <div className="container-thin flex flow-row row-gap-32">
+          <Text type="h2" weight="semibold" color="primary">
+            {props.value ? 'Edit action' : 'Add new action'}
+          </Text>
           <div className="flex flow-row row-gap-8">
             <FormItem
               name="targetAddress"
@@ -459,7 +482,7 @@ const CreateProposalActionModal: FC<Props> = props => {
           functionEncodedParams={abiSelectedFunctionEncoded}
           onOk={() => {
             showSimulatedActionModal(false);
-            props.onSubmit(formRef.current.getValues());
+            save();
           }}
           onCancel={() => {
             showSimulatedActionModal(false);

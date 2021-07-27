@@ -14,8 +14,7 @@ import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useConfig } from 'providers/configProvider';
 import { useWallet } from 'wallets/walletProvider';
 
-import CreateProposalActionModal, { ProposalAction } from '../../components/create-proposal-action-modal';
-import DeleteProposalActionModal from '../../components/delete-proposal-action-modal';
+import CreateProposalActionModal, { ProposalAction } from '../../modals/create-proposal-action-modal';
 
 type FormType = {
   title: string;
@@ -54,12 +53,24 @@ const ProposalCreateViewA: FC = () => {
           minLength: 'Should be at least 3 characters.',
         },
       },
+      actions: {
+        rules: {
+          required: true,
+          minItems: 1,
+          maxItems: 10,
+        },
+        messages: {
+          required: 'At least one action is required!',
+          minItems: 'At least one action is required!',
+          maxItems: 'Maximum 10 actions are allowed!',
+        },
+      },
     },
   });
 
   const [isSubmitting, setSubmitting] = useState(false);
   const [isCreateActionModal, showCreateActionModal] = useState(false);
-  const [isDeleteActionModal, showDeleteActionModal] = useState(false);
+  const [editAction, setEditAction] = useState<ProposalAction | undefined>();
 
   const { formState, watch } = form;
   const { isDirty } = formState;
@@ -71,22 +82,24 @@ const ProposalCreateViewA: FC = () => {
   }
 
   function handleCreateAction(action: ProposalAction) {
-    showCreateActionModal(false);
-    form.updateValue('actions', [...actions, action]);
-    // let actions = form.getFieldValue('actions');
-    //
-    // if (state.selectedAction) {
-    //   actions = actions.map((action: CreateProposalActionForm) => (action === state.selectedAction ? payload : action));
-    // } else {
-    //   actions.push(payload);
-    // }
-    //
-    // form.setFieldsValue({
-    //   actions,
-    // });
-  }
+    const { actions } = form.getValues();
+    const foundAction = actions.find(item => item.id === action.id);
 
-  function handleActionDelete() {}
+    showCreateActionModal(false);
+
+    if (!foundAction) {
+      console.log('ADD', [...actions, action]);
+      // add item
+      form.updateValue('actions', [...actions, action]);
+    } else {
+      console.log('REPLACE');
+      // replace item
+      form.updateValue(
+        'actions',
+        actions.map(item => (item === foundAction ? action : item)),
+      );
+    }
+  }
 
   async function handleSubmit(values: FormType) {
     setSubmitting(true);
@@ -98,10 +111,8 @@ const ProposalCreateViewA: FC = () => {
     }
 
     setSubmitting(false);
-    // setState({ submitting: true });
     //
     // try {
-    //   await form.validateFields();
     //
     //   const payload = {
     //     title: values.title,
@@ -206,18 +217,22 @@ const ProposalCreateViewA: FC = () => {
               </Text>
             </div>
             <div className="p-24">
-              <FormArray<FormType> name="actions">
+              <FormArray<FormType> name="actions" className="mb-16">
                 {({ fields, remove }) =>
                   fields.map((field, index) => (
                     <ProposalActionCard
+                      key={field.id}
                       className="mb-24"
                       title={`Action ${index + 1}`}
                       target={field.targetAddress}
                       signature={field.functionSignature}
-                      callData={'0x'}
+                      callData={field.encodedFunction}
                       showSettings
                       onDeleteAction={() => remove(index)}
-                      onEditAction={() => null}
+                      onEditAction={() => {
+                        setEditAction(field);
+                        showCreateActionModal(true);
+                      }}
                     />
                   ))
                 }
@@ -287,7 +302,13 @@ const ProposalCreateViewA: FC = () => {
               {/*    </>*/}
               {/*  )}*/}
               {/*</Form.List>*/}
-              <button type="button" className="button-ghost full-width" onClick={() => showCreateActionModal(true)}>
+              <button
+                type="button"
+                className="button-ghost full-width"
+                onClick={() => {
+                  setEditAction(undefined);
+                  showCreateActionModal(true);
+                }}>
                 <span className="mr-12">Add a new action</span>
                 <Icon name="plus-circle-outlined" color="inherit" />
               </button>
@@ -308,18 +329,9 @@ const ProposalCreateViewA: FC = () => {
       {isCreateActionModal && (
         <CreateProposalActionModal
           actions={actions}
-          value={undefined}
+          value={editAction}
           onCancel={() => showCreateActionModal(false)}
           onSubmit={handleCreateAction}
-        />
-      )}
-
-      {isDeleteActionModal && (
-        <DeleteProposalActionModal
-          onCancel={() => {
-            showDeleteActionModal(false);
-          }}
-          onOk={handleActionDelete}
         />
       )}
     </div>

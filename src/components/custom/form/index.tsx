@@ -3,10 +3,10 @@ import {
   ArrayPath,
   FieldValues,
   FormProvider,
-  useController,
-  useFieldArray,
   useForm as rhUseForm,
   UseFormReturn as rhUseFormReturn,
+  useController,
+  useFieldArray,
   useFormState,
 } from 'react-hook-form';
 import { UseControllerReturn } from 'react-hook-form/dist/types';
@@ -63,8 +63,8 @@ type SchemeType<V extends FieldValues = FieldValues> = {
     rules: ValiratorRulesType<V, P>;
     messages: {
       [M in keyof ValiratorRulesType<V, P>]:
-      | string
-      | ((actual: any, expected: any, property: string, obj: V) => string);
+        | string
+        | ((actual: any, expected: any, property: string, obj: V) => string);
     };
   };
 };
@@ -212,19 +212,21 @@ export function FormError(props: CP<FormErrorProps>) {
   ) : null;
 }
 
-export type FormItemProps<V extends FieldValues = FieldValues> = {
-  name: FieldPath<V>;
+export type FormItemProps<V extends FieldValues = FieldValues, N extends FieldPath<V> = FieldPath<V>> = {
+  name: N;
   label?: ReactNode;
   labelProps?: Partial<FieldLabelProps>;
   hideError?: boolean;
-  defaultValue?: UnpackNestedValue<FieldPathValue<V, FieldPath<V>>>;
-  children: (controller: UseControllerReturn<V>) => ReactElement;
+  defaultValue?: UnpackNestedValue<FieldPathValue<V, N>>;
+  children: (controller: UseControllerReturn<V, N>) => ReactElement;
 };
 
-export function FormItem<V extends FieldValues = FieldValues>(props: CP<FormItemProps<V>>) {
+export function FormItem<V extends FieldValues = FieldValues, N extends FieldPath<V> = FieldPath<V>>(
+  props: CP<FormItemProps<V, N>>,
+) {
   const { children, name, label, labelProps = {}, hideError = false, defaultValue } = props;
 
-  const controller = useController<V>({
+  const controller = useController<V, N>({
     name,
     defaultValue,
     shouldUnregister: true,
@@ -244,20 +246,28 @@ export function FormItem<V extends FieldValues = FieldValues>(props: CP<FormItem
   );
 }
 
-export type FormArrayProps<V extends FieldValues = FieldValues> = {
-  name: ArrayPath<V>;
+export type FormArrayProps<V extends FieldValues = FieldValues, N extends ArrayPath<V> = ArrayPath<V>> = {
+  name: N;
   keyName?: string;
-  children: (field: UseFieldArrayReturn<V, ArrayPath<V>, string>) => ReactNode;
+  hideError?: boolean;
+  children: (field: UseFieldArrayReturn<V, N, string>) => ReactNode;
 };
 
-export function FormArray<V extends FieldValues = FieldValues>(props: CP<FormArrayProps<V>>) {
-  const { children, name, keyName } = props;
+export function FormArray<V extends FieldValues = FieldValues, N extends ArrayPath<V> = ArrayPath<V>>(
+  props: CP<FormArrayProps<V, N>>,
+) {
+  const { children, name, keyName, hideError = false, className } = props;
 
-  const fieldArray = useFieldArray<V, ArrayPath<V>, string>({
+  const fieldArray = useFieldArray<V, N, string>({
     name,
     keyName,
     shouldUnregister: true,
   });
 
-  return <>{children(fieldArray)}</>;
+  return (
+    <div className={classnames('flex flow-row', className)}>
+      {children(fieldArray)}
+      {!hideError && <FormError name={name} />}
+    </div>
+  );
 }

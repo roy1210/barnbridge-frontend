@@ -4,12 +4,12 @@ import cn from 'classnames';
 import { AbiDecodeResult, AbiFunctionFragment, AbiInterface } from 'web3/abiInterface';
 import { shortenAddr } from 'web3/utils';
 
+import { ConfirmActionModal } from 'components/antd/modal';
 import PopoverMenu, { PopoverMenuItem } from 'components/antd/popover-menu';
 import ExpandableCard, { ExpandableCardProps } from 'components/custom/expandable-card';
 import { ExplorerAddressLink } from 'components/custom/externalLink';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
-import DeleteProposalActionModal from 'modules/governance/components/delete-proposal-action-modal';
 
 import s from './s.module.scss';
 
@@ -167,10 +167,10 @@ const ProposalActionCard: FC<Props> = props => {
         )}
       </div>
       {isDeleteActionModal && (
-        <DeleteProposalActionModal
-          onCancel={() => {
-            showDeleteActionModal(false);
-          }}
+        <ConfirmActionModal
+          width={460}
+          text="Are you sure you want to delete the action?"
+          onCancel={() => showDeleteActionModal(false)}
           onOk={() => {
             showDeleteActionModal(false);
             onDeleteAction?.();

@@ -18,7 +18,7 @@ import { useDAO } from 'modules/governance/providers/daoProvider';
 import { useKnownTokens } from 'providers/knownTokensProvider';
 import { useWallet } from 'wallets/walletProvider';
 
-import VotingDetailedModal from '../voting-detailed-modal';
+import VotingDetailedModal from '../../modals/voting-detailed-modal';
 
 import { getFormattedDuration, getNowTs, inRange } from 'utils';
 

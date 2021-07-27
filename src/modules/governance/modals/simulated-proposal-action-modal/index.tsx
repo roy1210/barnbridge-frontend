@@ -4,7 +4,7 @@ import Modal, { ModalProps } from 'components/antd/modal';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 
-import ProposalActionCard from '../proposal-action-card';
+import ProposalActionCard from 'modules/governance/components/proposal-action-card';
 
 type Props = ModalProps & {
   targetAddress: any;
