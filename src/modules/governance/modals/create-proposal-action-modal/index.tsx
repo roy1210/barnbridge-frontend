@@ -1,4 +1,5 @@
 import { FC, useEffect, useMemo, useRef, useState } from 'react';
+import AntdNotification from 'antd/lib/notification';
 import AntdSwitch from 'antd/lib/switch';
 import uniqueId from 'lodash/uniqueId';
 import { AbiInterface } from 'web3/abiInterface';
@@ -125,6 +126,7 @@ const CreateProposalActionModal: FC<Props> = props => {
     isProxyAddress,
     implementationAddress,
     addValueAttribute,
+    actionValue,
     addFunctionCall,
     functionSignature,
     functionInputs,
@@ -133,6 +135,7 @@ const CreateProposalActionModal: FC<Props> = props => {
     'isProxyAddress',
     'implementationAddress',
     'addValueAttribute',
+    'actionValue',
     'addFunctionCall',
     'functionSignature',
     'functionInputs',
@@ -262,6 +265,21 @@ const CreateProposalActionModal: FC<Props> = props => {
   }
 
   async function handleSubmit(values: FormType) {
+    const hasSimilar = props.actions.some(action => {
+      return (
+        action.targetAddress === values.targetAddress &&
+        action.actionValue === values.actionValue &&
+        action.functionSignature === values.functionSignature &&
+        action.encodedParams === abiSelectedFunctionEncoded
+      );
+    });
+
+    if (hasSimilar) {
+      AntdNotification.error({
+        message: 'Duplicate actions are disallowed!',
+      });
+    }
+
     try {
       setSubmitting(true);
       await tryAction(values);
@@ -272,24 +290,6 @@ const CreateProposalActionModal: FC<Props> = props => {
       setSubmitting(false);
       showSimulatedActionModal(true);
     }
-    /*const existsSimilar = props.actions.some(action => {
-      return (
-        action !== values &&
-        action.addFunctionCall &&
-        action.targetAddress === values.targetAddress &&
-        action.functionSignature === values.functionSignature &&
-        action.functionEncodedParams === values.functionEncodedParams
-      );
-    });
-
-    if (existsSimilar) {
-      AntdNotification.error({
-        message: 'Duplicate actions are disallowed!',
-      });
-      return;
-    }
-
-    }*/
   }
 
   return (
@@ -343,17 +343,8 @@ const CreateProposalActionModal: FC<Props> = props => {
                     Action Value
                   </Text>
                   <AddZerosPopup
-                    max={78}
-                    onAdd={value => {
-                      /*const { actionValue: prevActionValue } = getFieldsValue();
-
-                      if (prevActionValue) {
-                        const zeros = '0'.repeat(value);
-                        form.setFieldsValue({
-                          actionValue: `${prevActionValue}${zeros}`,
-                        });
-                      }*/
-                    }}
+                    value={actionValue}
+                    onSubmit={value => formRef.current.updateValue('actionValue', value)}
                   />
                 </div>
               }>
@@ -393,17 +384,10 @@ const CreateProposalActionModal: FC<Props> = props => {
                         </Text>
                         {/(u?int\d+)/g.test(input.type) && (
                           <AddZerosPopup
-                            onAdd={value => {
-                              // const prevActionValue = functionParams[input.name];
-                              //
-                              // if (prevActionValue) {
-                              //   const zeros = '0'.repeat(value);
-                              //   functionParams[input.name] = `${prevActionValue}${zeros}`;
-                              //
-                              //   const paramsValues = Object.values(functionParams);
-                              //   const encodedParams = AbiInterface.encodeFunctionData(functionMeta, paramsValues);
-                              // }
-                            }}
+                            value={formRef.current.getValues().functionInputs[index].value}
+                            onSubmit={value =>
+                              formRef.current.updateValue(`functionInputs.${index}.value` as const, value)
+                            }
                           />
                         )}
                       </div>

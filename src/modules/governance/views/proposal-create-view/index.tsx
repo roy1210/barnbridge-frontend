@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, useHistory } from 'react-router-dom';
+import waitUntil from 'async-wait-until';
 
 import Input from 'components/antd/input';
 import Textarea from 'components/antd/textarea';
@@ -25,6 +26,7 @@ type FormType = {
 const ProposalCreateViewA: FC = () => {
   const config = useConfig();
   const daoCtx = useDAO();
+  const history = useHistory();
 
   const form = useForm<FormType>({
     defaultValues: {
@@ -76,9 +78,18 @@ const ProposalCreateViewA: FC = () => {
   const { isDirty } = formState;
   const [actions] = watch(['actions']);
 
-  function fetchProposal(proposalId: number): Promise<APIProposalEntity> {
-    const url = new URL(`/api/governance/proposals/${proposalId}`, config.api.baseUrl);
-    return executeFetch<APIProposalEntity>(url);
+  async function waitForProposal(proposalId: number) {
+    try {
+      const url = new URL(`/api/governance/proposals/${proposalId}`, config.api.baseUrl);
+      await waitUntil(() => executeFetch<APIProposalEntity>(url), {
+        intervalBetweenAttempts: 3_000,
+        timeout: 60_000,
+      });
+      history.push(`/governance/proposals/${proposalId}`);
+    } catch (e) {
+      console.error(e);
+      history.push('/governance/proposals');
+    }
   }
 
   function handleCreateAction(action: ProposalAction) {
@@ -88,11 +99,9 @@ const ProposalCreateViewA: FC = () => {
     showCreateActionModal(false);
 
     if (!foundAction) {
-      console.log('ADD', [...actions, action]);
       // add item
       form.updateValue('actions', [...actions, action]);
     } else {
-      console.log('REPLACE');
       // replace item
       form.updateValue(
         'actions',
@@ -105,70 +114,33 @@ const ProposalCreateViewA: FC = () => {
     setSubmitting(true);
 
     try {
-      await daoCtx.daoGovernance.propose(values.title, values.description, [], [], [], [], 1);
+      const actionTargets = values.actions.map(action => action.targetAddress);
+      const actionValues = values.actions.map(action => {
+        return action.addValueAttribute ? action.actionValue : '0';
+      });
+      const actionSignatures = values.actions.map(action => {
+        return action.addFunctionCall ? action.functionSignature : '';
+      });
+      const actionCallDatas = values.actions.map(action => {
+        return action.addFunctionCall ? action.encodedParams : '0x';
+      });
+
+      const proposalId = await daoCtx.daoGovernance.propose(
+        values.title,
+        values.description,
+        actionTargets,
+        actionValues,
+        actionSignatures,
+        actionCallDatas,
+        1,
+      );
+
+      await waitForProposal(proposalId);
     } catch (e) {
       console.error(e);
     }
 
     setSubmitting(false);
-    //
-    // try {
-    //
-    //   const payload = {
-    //     title: values.title,
-    //     description: values.description,
-    //     ...values.actions.reduce(
-    //       (a, c) => {
-    //         if (!c.targetAddress) {
-    //           return a;
-    //         }
-    //
-    //         a.targets.push(c.targetAddress);
-    //
-    //         if (c.addFunctionCall) {
-    //           a.signatures.push(c.functionSignature!);
-    //           a.calldatas.push(c.functionEncodedParams || '0x');
-    //         } else {
-    //           a.signatures.push('');
-    //           a.calldatas.push('0x');
-    //         }
-    //
-    //         if (c.addValueAttribute) {
-    //           a.values.push(c.actionValue!);
-    //         } else {
-    //           a.values.push('0');
-    //         }
-    //
-    //         return a;
-    //       },
-    //       {
-    //         targets: [] as string[],
-    //         signatures: [] as string[],
-    //         calldatas: [] as string[],
-    //         values: [] as string[],
-    //       },
-    //     ),
-    //   };
-    //
-    //   const proposalId = await daoCtx.daoGovernance.propose(
-    //     payload.title,
-    //     payload.description,
-    //     payload.targets,
-    //     payload.values,
-    //     payload.signatures,
-    //     payload.calldatas,
-    //     1,
-    //   ); /// TODO: GAS PRICE
-    //
-    //   await waitUntil(() => fetchProposal(proposalId), { intervalBetweenAttempts: 3_000, timeout: Infinity });
-    //
-    //   form.resetFields();
-    //   history.push(`/governance/proposals/${proposalId}`);
-    // } catch (e) {
-    //   console.error(e);
-    // }
-    //
-    // setState({ submitting: false });
   }
 
   return (
@@ -237,71 +209,6 @@ const ProposalCreateViewA: FC = () => {
                   ))
                 }
               </FormArray>
-              {/*<Form.List*/}
-              {/*  name="actions"*/}
-              {/*  rules={[*/}
-              {/*    {*/}
-              {/*      validator: (_, value: StoreValue) => {*/}
-              {/*        return value.length === 0 ? Promise.reject() : Promise.resolve();*/}
-              {/*      },*/}
-              {/*      message: 'At least one action is required!',*/}
-              {/*    },*/}
-              {/*    {*/}
-              {/*      validator: (_, value: StoreValue) => {*/}
-              {/*        return value.length > 10 ? Promise.reject() : Promise.resolve();*/}
-              {/*      },*/}
-              {/*      message: 'Maximum 10 actions are allowed!',*/}
-              {/*    },*/}
-              {/*  ]}>*/}
-              {/*  {(fields, _, { errors }) => (*/}
-              {/*    <>*/}
-              {/*      {fields.map((field, index) => {*/}
-              {/*        const fieldData: CreateProposalActionForm = form.getFieldValue(['actions', index]);*/}
-              {/*        const { targetAddress, functionSignature, functionEncodedParams } = fieldData;*/}
-
-              {/*        return (*/}
-              {/*          <Form.Item key={field.key} noStyle>*/}
-              {/*            <ProposalActionCard*/}
-              {/*              className="mb-24"*/}
-              {/*              title={`Action ${index + 1}`}*/}
-              {/*              target={targetAddress}*/}
-              {/*              signature={functionSignature!}*/}
-              {/*              callData={functionEncodedParams!}*/}
-              {/*              showSettings*/}
-              {/*              onDeleteAction={() => {*/}
-              {/*                setState({*/}
-              {/*                  showDeleteActionModal: true,*/}
-              {/*                  selectedAction: fieldData,*/}
-              {/*                });*/}
-              {/*              }}*/}
-              {/*              onEditAction={() => {*/}
-              {/*                setState({*/}
-              {/*                  showCreateActionModal: true,*/}
-              {/*                  selectedAction: fieldData,*/}
-              {/*                });*/}
-              {/*              }}*/}
-              {/*            />*/}
-              {/*          </Form.Item>*/}
-              {/*        );*/}
-              {/*      })}*/}
-
-              {/*      {fields.length < 10 && (*/}
-              {/*        <Button*/}
-              {/*          type="ghost"*/}
-              {/*          icon={<Icon name="plus-circle-outlined" color="inherit" />}*/}
-              {/*          disabled={state.submitting}*/}
-              {/*          className={s.addActionBtn}*/}
-              {/*          onClick={() => setState({ showCreateActionModal: true })}>*/}
-              {/*          Add new action*/}
-              {/*        </Button>*/}
-              {/*      )}*/}
-
-              {/*      {fields.length >= 10 && <Alert type="info" message="Maximum 10 actions are allowed." />}*/}
-
-              {/*      <AntdForm.ErrorList errors={errors} />*/}
-              {/*    </>*/}
-              {/*  )}*/}
-              {/*</Form.List>*/}
               <button
                 type="button"
                 className="button-ghost full-width"

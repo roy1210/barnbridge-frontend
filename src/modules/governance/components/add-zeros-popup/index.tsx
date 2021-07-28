@@ -1,74 +1,66 @@
-import { ChangeEvent, FC, useState } from 'react';
+import { FC, useState } from 'react';
+import BigNumber from 'bignumber.js';
 
-import Button from 'components/antd/button';
 import Input from 'components/antd/input';
 import Popover, { PopoverProps } from 'components/antd/popover';
-import Grid from 'components/custom/grid';
 import Icon from 'components/custom/icon';
 import { Text } from 'components/custom/typography';
 
 type Props = PopoverProps & {
-  max?: number;
-  onAdd: (value: number) => void;
+  value: string;
+  onSubmit: (value: string) => void;
 };
 
 const AddZerosPopup: FC<Props> = props => {
-  const { max, onAdd, ...popoverProps } = props;
+  const { onSubmit, ...popoverProps } = props;
+
   const [visible, setVisible] = useState<boolean>(false);
-  const [value, setValue] = useState<string>('');
+  const [zeroCount, setZeroCount] = useState<string>('');
 
-  function handleChange(ev: ChangeEvent<HTMLInputElement>) {
-    setValue(ev.target.value);
-  }
-
-  function handleCancel() {
-    setVisible(false);
-    setValue('');
-  }
+  const nrZeroCount = Number(zeroCount);
+  const finalValue = Number.isFinite(nrZeroCount) ? BigNumber.from(props.value)?.scaleBy(nrZeroCount) : undefined;
+  const isValidValue = finalValue?.gte(0) && finalValue?.lte(BigNumber.MAX_UINT_256);
 
   function handleAddZeros() {
+    setZeroCount('');
     setVisible(false);
 
-    const val = Number(value);
-
-    if (!Number.isNaN(val)) {
-      onAdd?.(val);
-    }
-
-    setValue('');
+    onSubmit?.(finalValue?.toString() ?? '');
   }
 
   const content = (
-    <Grid flow="row" gap={24}>
-      <Grid flow="row" gap={8}>
+    <div className="flex flow-row row-gap-24">
+      <div className="flex flow-row row-gap-8">
         <Text type="small" weight="semibold" color="secondary">
           Number of zeros
         </Text>
-        <Grid flow="col" gap={16}>
-          <Button type="ghost" onClick={() => setValue('6')}>
-            6
-          </Button>
-          <Button type="ghost" onClick={() => setValue('8')}>
-            8
-          </Button>
-          <Button type="ghost" onClick={() => setValue('18')}>
-            18
-          </Button>
-          <Input type="number" value={value} max={max} placeholder={`Max ${max}`} onChange={handleChange} />
-        </Grid>
-      </Grid>
+        <div className="flex flow-col col-gap-16">
+          {[6, 8, 18].map(v => (
+            <button key={v} type="button" className="button-ghost ph-16" onClick={() => setZeroCount(String(v))}>
+              {v}
+            </button>
+          ))}
+          <Input type="number" value={zeroCount} onChange={ev => setZeroCount(ev.target.value)} />
+        </div>
+      </div>
       <Text type="p2" weight="semibold" color="secondary">
         Use the options above to add trailing zeros to the input amount.
       </Text>
-      <Grid flow="col" gap={16} justify="space-between">
-        <Button type="ghost" onClick={handleCancel}>
+      <div className="flex flow-col col-gap-16 justify-space-between">
+        <button
+          type="button"
+          className="button-ghost"
+          onClick={() => {
+            setVisible(false);
+            setZeroCount('');
+          }}>
           Cancel
-        </Button>
-        <Button type="primary" onClick={handleAddZeros}>
+        </button>
+        <button type="button" className="button-primary" disabled={!isValidValue} onClick={handleAddZeros}>
           Add zeros
-        </Button>
-      </Grid>
-    </Grid>
+        </button>
+      </div>
+    </div>
   );
 
   return (
@@ -80,7 +72,9 @@ const AddZerosPopup: FC<Props> = props => {
       visible={visible}
       onVisibleChange={setVisible}
       {...popoverProps}>
-      <Button type="link" icon={<Icon name="plus-square-outlined" width={16} height={16} />} />
+      <button type="button" className="button-text">
+        <Icon name="plus-square-outlined" width={16} height={16} />
+      </button>
     </Popover>
   );
 };
